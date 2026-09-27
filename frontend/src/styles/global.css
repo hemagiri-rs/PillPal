@@ -1128,3 +1128,32 @@ ul.lang-grid {
 .day-nav-row .btn {
   flex: 1 1 10rem;
 }
+.invite-box {
+  margin-bottom: var(--space-4);
+  background: var(--surface-sage);
+}
+.invite-list {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  margin: var(--space-4) 0 0;
+  list-style: none;
+}
+.invite-row {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.invite-row .count {
+  justify-self: start;
+}
+.count-pending {
+  background: var(--pending-tint);
+  border-color: var(--pending);
+}
+.add-person {
+  margin-top: var(--space-3);
+}

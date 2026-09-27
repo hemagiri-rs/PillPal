@@ -2,6 +2,7 @@
 // (out of scope). The Capacitor build will swap this for native local notifications later.
 import type { Dose, Role } from "./api";
 import { firstName, fmtTime } from "./format";
+import { t } from "./i18n";
 
 const ENABLED_KEY = "pillpal:reminders";
 const SENT_KEY = "pillpal:notified";
@@ -30,7 +31,11 @@ export async function enableReminders(): Promise<ReminderState> {
   if (permission !== "granted") return permission === "denied" ? "blocked" : "off";
   await navigator.serviceWorker.register("/sw.js");
   store(ENABLED_KEY, "on");
-  await show("Reminders are on", "PillPal will remind you when a medicine is due.", "pillpal-test");
+  await show(
+    t("Reminders are on"),
+    t("PillPal will remind you when a medicine is due."),
+    "pillpal-test",
+  );
   return "on";
 }
 
@@ -70,9 +75,9 @@ export async function remindDue(doses: Dose[], nowIso: string, role: Role) {
     sent.add(key);
     const who = role === "caregiver" ? `${firstName(d.profile_name)}: ` : "";
     const title = late
-      ? `${who}${d.medicine_name} is still not marked`
-      : `${who}time for ${d.medicine_name} ${d.strength}`;
-    await show(title, `${d.instructions} (${fmtTime(d.time)})`, key);
+      ? who + t("{medicine} is still not marked", { medicine: d.medicine_name })
+      : who + t("Time for {medicine}", { medicine: `${d.medicine_name} ${d.strength}` });
+    await show(title, `${t(d.instructions)} (${fmtTime(d.time)})`, key);
   }
   store(SENT_KEY, JSON.stringify([...sent]));
 }
