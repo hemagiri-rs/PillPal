@@ -36,12 +36,18 @@ export default function MedicinesView() {
   return (
     <div>
       <h1>{caregiver ? t("Medicines") : t("My medicines")}</h1>
-      {caregiver && (
-        <a class="btn btn-primary btn-huge btn-block add-med" href="/medicine">
-          <Icon name="plus" />
-          {t("Add a medicine")}
+      <div class="med-actions">
+        {caregiver && (
+          <a class="btn btn-primary btn-huge btn-block" href="/medicine">
+            <Icon name="plus" />
+            {t("Add a medicine")}
+          </a>
+        )}
+        <a class="btn btn-secondary btn-block" href="/print">
+          <Icon name="today" />
+          {t("Print a weekly chart")}
         </a>
-      )}
+      </div>
 
       {profiles.map((p) => {
         const mine = meds.filter((m) => m.profile_id === p.id);

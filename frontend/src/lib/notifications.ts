@@ -29,7 +29,7 @@ export async function enableReminders(): Promise<ReminderState> {
   if (reminderState() === "unsupported") return "unsupported";
   const permission = await Notification.requestPermission();
   if (permission !== "granted") return permission === "denied" ? "blocked" : "off";
-  await navigator.serviceWorker.register("/sw.js");
+  await navigator.serviceWorker.register("/sw.js"); // usually already registered by the layout
   store(ENABLED_KEY, "on");
   await show(
     t("Reminders are on"),

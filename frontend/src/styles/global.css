@@ -1325,3 +1325,74 @@ ul.lang-grid {
   height: 1.5rem;
   flex: none;
 }
+.med-actions {
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-5);
+}
+/* Printable weekly chart */
+.sheet {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+.sheet-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-body);
+}
+.sheet-table th,
+.sheet-table td {
+  border: 2px solid var(--text);
+  padding: 0.5rem;
+  text-align: start;
+  vertical-align: top;
+}
+.sheet-table .day-col,
+.sheet-table .tick {
+  text-align: center;
+  width: 3.25rem;
+}
+.sheet-table .tick {
+  font-size: 1.75rem;
+  vertical-align: middle;
+}
+.time-col {
+  white-space: nowrap;
+}
+.sheet-foot {
+  margin-top: var(--space-3);
+  font-size: var(--fs-sm);
+}
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+  body {
+    background: #fff;
+    font-size: 14pt;
+  }
+  .topbar,
+  .tabs,
+  .disclaimer,
+  .skip-link,
+  .no-print {
+    /* biome-ignore lint/complexity/noImportantStyles: print must hide app chrome regardless of layout rules */
+    display: none !important;
+  }
+  main,
+  .app-main {
+    max-width: none;
+    padding: 0;
+  }
+  .sheet {
+    margin: 0;
+    border: 0;
+    padding: 0;
+    overflow: visible;
+  }
+}

@@ -1,0 +1,8 @@
+---
+import PrintView from "../components/PrintView";
+import AppLayout from "../layouts/AppLayout.astro";
+---
+
+<AppLayout title="Weekly chart" nav="medicines">
+  <PrintView client:only="preact" />
+</AppLayout>

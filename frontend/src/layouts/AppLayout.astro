@@ -20,6 +20,10 @@ const { title, nav = false } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#24532f" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="PillPal" />
     <title>{title} · PillPal</title>
     <script is:inline>
       // Before first paint: saved text size, language and direction (avoids a jump / flash)
@@ -46,6 +50,9 @@ const { title, nav = false } = Astro.props;
     </footer>
     <script>
       import { hasChosenLang, translateStatic } from "../lib/i18n";
+
+      // Installable app (PWA) + reminder notifications both use the service worker.
+      if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
 
       // First visit: choose a language before anything else.
       if (!hasChosenLang() && location.pathname !== "/language") location.href = "/language";

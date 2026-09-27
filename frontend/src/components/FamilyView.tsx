@@ -4,6 +4,7 @@ import { parseDate } from "../lib/format";
 import { getLang, useT } from "../lib/i18n";
 import { signOut, useMe } from "../lib/session";
 import { Icon, type IconName } from "./Icon";
+import InstallCard from "./InstallCard";
 import ReminderSettings from "./ReminderSettings";
 
 type Draft = { name: string; date_of_birth: string; notes: string };
@@ -380,6 +381,7 @@ export default function FamilyView() {
         </div>
         <TextSize />
         <ReminderSettings />
+        <InstallCard />
         <div class="card">
           <h3>{t("Account")}</h3>
           <p class="hint">{t("Signed in as {email}", { email: me.email })}</p>
