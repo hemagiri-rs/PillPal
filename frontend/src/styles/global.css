@@ -1227,3 +1227,7 @@ ul.lang-grid {
 .add-med {
   margin-bottom: var(--space-5);
 }
+.person-missed {
+  border: 3px solid var(--missed);
+  background: var(--missed-tint);
+}

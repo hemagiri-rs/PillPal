@@ -144,11 +144,12 @@ export default function TodayView() {
             const due = mine.filter((d) => d.due);
             const next = mine.find((d) => d.status === "pending");
             const taken = mine.filter((d) => d.status === "taken").length;
+            const missed = mine.filter((d) => d.status === "missed").length;
             return (
               <button
                 key={p.id}
                 type="button"
-                class={`person-card${due.length ? " person-due" : ""}`}
+                class={`person-card${due.length ? " person-due" : missed && !next ? " person-missed" : ""}`}
                 onClick={() => openPerson(p.id)}
               >
                 <span class="person-name">{p.name}</span>
@@ -162,7 +163,9 @@ export default function TodayView() {
                             medicine: next.medicine_name,
                             time: fmtTime(next.time),
                           })
-                        : t("All done for today")}
+                        : missed
+                          ? t("{count} missed today", { count: missed })
+                          : t("All done for today")}
                 </span>
                 {mine.length > 0 && (
                   <span class="hint">
@@ -185,7 +188,9 @@ export default function TodayView() {
     ? (doses.find((d) => d.due) ?? doses.find((d) => d.status === "pending"))
     : undefined;
   const rest = doses.filter((d) => d !== hero);
-  const allDone = isToday && doses.length > 0 && !doses.some((d) => d.status === "pending");
+  const finished = isToday && doses.length > 0 && !doses.some((d) => d.status === "pending");
+  const missedToday = doses.filter((d) => d.status === "missed").length;
+  const allDone = finished && missedToday === 0;
   const who = caregiver ? profiles.find((p) => p.id === person)?.name : null;
 
   return (
@@ -228,6 +233,17 @@ export default function TodayView() {
         <div class="all-done" role="status">
           <Icon name="check" class="icon-lg icon-taken" />
           <p>{t("All done for today. Well done!")}</p>
+        </div>
+      )}
+
+      {finished && missedToday > 0 && (
+        <div class="notice notice-warning" role="status">
+          <Icon name="alert" />
+          <span>
+            {t("{count} medicine(s) were missed today. You can still mark them below if taken.", {
+              count: missedToday,
+            })}
+          </span>
         </div>
       )}
 
