@@ -11,3 +11,7 @@ __pycache__/
 .ruff_cache/
 *.db
 *.swp
+
+# Local reference material, kept out of the repo on purpose:
+# the Laws of UX content is CC BY-NC-ND 4.0 (no redistribution).
+Laws of ux-v1.zip

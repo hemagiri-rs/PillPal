@@ -20,17 +20,27 @@ between them." Name the team and move on — don't spend more than 15 seconds he
 
 ---
 
-## Slide 2 — The problem (Theme 4 #2, verbatim requirement)
+## Slide 2 — The problem statement, clause by clause
 
 > "Build a reminder application for managing medication schedules for family members. Users can create
 > profiles, add medicines with dosage instructions and timing, and mark doses as taken or skipped.
 > Provide a daily schedule and adherence summary. Include validation to avoid duplicate or conflicting
 > entries."
 
-**We met every clause — and built for the people who actually use it.**
+| Clause in the brief | Where it lives in PillPal |
+|---|---|
+| Managing medication schedules **for family members** | Family + Profile — the caregiver's home shows one card per person |
+| Users can **create profiles** | Profiles page, or created automatically when an invite is accepted |
+| Add medicines with **dosage instructions and timing** | Medicines page — name, strength, plain-language instructions, times, date range |
+| **Mark doses as taken or skipped** | "I took it" / "Not taking it" on every dose card, with Undo |
+| **Daily schedule** | Today — the day's doses, each with a computed status |
+| **Adherence summary** | Progress — %, 7-day chart, streak, per-medicine breakdown |
+| **Validation to avoid duplicate or conflicting entries** | 409 on a duplicate, 422 on duplicate times, conflicts within 30 minutes warned (slide 10) |
 
-→ Read the highlighted clause only, then say: "The rubric asks for four things. We did all four, and
-then asked who uses this app in real life — and the answer is a 70-year-old, not a 20-year-old."
+**All seven clauses are implemented — and then we built for the person who actually has to use it.**
+
+→ Point at the last row and say: "That's the clause most teams skip. We wrote tests for it." Then the
+one-liner: this app is used by a 70-year-old, not a 20-year-old — so we designed for that.
 
 ---
 
@@ -153,20 +163,34 @@ the field**, in plain words, saying how to fix it — never a code.
 
 ---
 
-## Slide 11 — For older users (accessibility as a requirement, not polish)
+## Slide 11 — UI/UX & Frontend Design: usability and visual consistency
 
+The rubric asks for *interface quality, responsiveness, usability, visual consistency, navigation and
+overall user experience*. Concretely, that means:
+
+**Usability — designed for the primary user, not the average one**
 - **22 px** body text, headings 26–32 px, nothing below 16 px anywhere; in-app text-size control.
 - Text contrast **≥ 7:1 (WCAG AAA)**; no light-grey text.
-- Tap targets **≥ 56 px**, full-width primary buttons, 12 px+ between targets.
+- Tap targets **≥ 56 px**, full-width primary buttons, 12 px+ of spacing between them.
 - Status is **never colour alone** — always **colour + icon + text label**.
 - Plain words: "Take 1 tablet after breakfast", not "1 tab PO pc".
-- 12-hour times ("8:00 PM"); dates as "Today" / "Yesterday" / "Mon 28 Sep".
-- Every icon has a visible word beneath it.
-- `prefers-reduced-motion` respected; Lighthouse accessibility target ≥ 95.
+
+**Visual consistency — one source of truth**
+- A single `global.css` token file drives every colour, radius, spacing value and type size; no page
+  invents its own.
+- The same action looks the same everywhere: every primary button, every dose status, every card.
+- Times are always 12-hour ("8:00 PM") and dates always "Today" / "Yesterday" / "Mon 28 Sep" — no ISO
+  dates anywhere in the UI.
+
+**Navigation and overall experience**
+- Bottom tab bar on mobile with a visible word under every icon; the same layout on every page, so the
+  same thing is always in the same place.
+- Responsive and mobile-first; `prefers-reduced-motion` respected; Lighthouse accessibility ≥ 95.
 
 → Contrast note worth saying out loud: the vermillion "missed" colour fails contrast against both white
 and black text, so status chips use a **light tint background + solid border + icon + near-black text**.
-We measured it instead of guessing.
+We measured it instead of guessing. And "visual consistency" here isn't an aesthetic claim — it's one
+shared token file, which we can open and show.
 
 ---
 
@@ -269,7 +293,27 @@ would live in the browser. One place to enforce rules is the point.
 
 ---
 
-## Slide 16 — Tech stack
+## Slide 16 — Technical implementation and code structure
+
+The rubric asks about *HTML/CSS/JavaScript/framework quality, backend integration, database/API
+implementation, code structure and technical execution*.
+
+**Frontend execution**
+- Semantic HTML and native controls (date/time pickers rather than custom widgets), with real ARIA —
+  `combobox`/`listbox` with arrow-key support on the drug autocomplete, not a styled div.
+- **CSS custom properties** in one token file — no utility-class sprawl, no inline styles.
+- TypeScript throughout, and `astro check` runs in CI, so it has to typecheck to ship.
+- Astro ships almost no JavaScript: only the interactive parts (dose card, medicine form) are Preact
+  islands. That matters on an old Android phone.
+
+**Backend execution**
+- Layered and typed by design: `models` (tables) → `schemas` (API contract) → `routers` (endpoints) →
+  `schedule` (domain logic). Request/response bodies are deliberately separate from table models.
+- One auth dependency chain — verify JWT → identity → app user → role guard — so every protected route
+  *declares* what it needs and authorization can't be quietly forgotten inside a handler.
+- Small focused modules: `formatting.py` (plain-language dates and times), `groq.py`, `languages.py`.
+
+**Stack**
 
 | Layer | |
 |---|---|
@@ -278,8 +322,8 @@ would live in the browser. One place to enforce rules is the point.
 | Data & services | **Supabase** Postgres + Auth · **Groq** · **NLM RxTerms** |
 | CI | GitHub Actions: Ruff + pytest · Biome + astro check + static build |
 
-→ One sentence on the frontend choice: Astro ships almost no JavaScript, and only the interactive parts
-(the dose card, the medicine form) are Preact islands — which matters on an old Android phone.
+→ If asked "why Astro": because the rubric scores JavaScript quality, and the best JavaScript is the
+JavaScript you don't ship.
 
 ---
 
@@ -338,17 +382,39 @@ the required validation; don't rush them.
 
 ---
 
-## Slide 20 — Rubric mapping
+## Slide 20 — Rubric mapping, in the judges' own words
 
-| Criteria (5 marks each) | How we answer it |
-|---|---|
-| **Functionality & Requirements** | Every clause of Theme 4 #2: profiles, medicines with dosage + timing, taken/skipped marking, daily schedule, adherence summary, duplicate/conflict validation — plus invitations, alerts, refills, print |
-| **UI/UX & Frontend Design** | Senior-first design (22 px body, 7:1 contrast, 56 px targets, colour + icon + label), mobile-first responsive, 4-step add-medicine flow, plain-language errors, read-aloud, printable view — **every choice traceable to a named UX law** (slide 12) |
-| **Technical Implementation** | FastAPI + SQLModel REST API, Postgres, JWT auth with role guards, RLS, unique constraints, computed schedules in the family's timezone, typed end to end, Ruff + Biome, GitHub Actions CI |
-| **Innovation & Presentation** | 23 languages with RTL, AI summary and translation that always degrade to a working fallback, refill prediction, adherence alerts, canvas-free installable app, and a demo where every claim is visible on screen |
+**1 · Functionality & Requirements** — *completeness of the required features, correctness of
+functionality, and whether the solution addresses the given problem statement*
+→ All seven clauses of Theme 4 #2 are implemented, and every "duplicate or conflicting entries" rule has
+its own pytest test (slide 2). Additional useful features: invitations, adherence alerts, refill
+prediction, printable chart.
 
-→ Don't read this table aloud. Put it up, say "every mark on the rubric has a screen behind it", and go
-to the closing slide.
+**2 · UI/UX & Frontend Design** — *interface quality, responsiveness, usability, visual consistency,
+navigation, and overall user experience*
+→ Senior-first rules treated as requirements: 22 px body, 7:1 contrast, 56 px targets, colour + icon +
+label. One token file for visual consistency and one labelled tab bar for navigation (slide 11). Every
+choice traceable to a named UX law (slide 12).
+
+**3 · Technical Implementation** — *quality of HTML/CSS/JavaScript/framework usage, backend integration,
+database/API implementation, code structure, and technical execution*
+→ Layered, fully typed FastAPI + SQLModel; JWT auth with role guards; RLS on every table; unique
+constraints; schedules computed in the family's timezone; semantic HTML and CSS design tokens; Ruff +
+Biome + GitHub Actions CI (slide 16).
+
+**4 · Innovation & Presentation** — *creativity, originality, additional useful features,
+problem-solving approach, and clarity of demonstration/presentation*
+→ 23 Indian languages with RTL; AI that always degrades to a working fallback; refill prediction and
+adherence alerts; one codebase for web and Android; and a demo where every claim is visible on screen
+(slide 19).
+
+→ Don't read this table aloud. Put it up and say: "every mark on this rubric has a screen behind it."
+
+The brief's own Evaluation Areas map onto these four rows one to one: problem understanding and
+completeness → row 1 · frontend usability and responsive design → row 2 · backend/API and database
+integration → row 3 · functional correctness and validation → rows 1 and 3 · innovation and meaningful
+use of the theme → row 4 · code quality, security awareness and error handling → row 3 · demo quality and
+ability to explain technical decisions → the demo and the backup slides.
 
 ---
 
