@@ -7,6 +7,10 @@ Copy-paste material for building the deck. Each slide has the **on-slide text** 
 text `#1F2A24`, status colours Taken `#0072B2` · Skipped `#E69F00` · Pending `#56B4E9` · Missed `#D55E00`.
 Fonts: Lora (headings) + Atkinson Hyperlegible (body). Left-align text, no more than 6 bullets a slide.
 
+**Rubric legend.** The deck is scored on four criteria, 5 marks each. Every slide is tagged with the ones
+it earns: **F** = Functionality & Requirements · **U** = UI/UX & Frontend Design ·
+**T** = Technical Implementation · **I** = Innovation & Presentation.
+
 ---
 
 ## Slide 1 — Title
@@ -21,6 +25,8 @@ between them." Name the team and move on — don't spend more than 15 seconds he
 ---
 
 ## Slide 2 — The problem statement, clause by clause
+*Scores: F*
+
 
 > "Build a reminder application for managing medication schedules for family members. Users can create
 > profiles, add medicines with dosage instructions and timing, and mark doses as taken or skipped.
@@ -45,6 +51,8 @@ one-liner: this app is used by a 70-year-old, not a 20-year-old — so we design
 ---
 
 ## Slide 3 — Who it is for
+*Scores: U · I*
+
 
 **Ramesh, 72** — takes 3 medicines a day. Can't read 10 px grey text. Doesn't speak English.
 **Priya, 41** — runs the family's medicines from another city. Doesn't know what he skipped.
@@ -57,6 +65,8 @@ one-liner: this app is used by a 70-year-old, not a 20-year-old — so we design
 ---
 
 ## Slide 4 — What PillPal does (feature map)
+*Scores: F*
+
 
 | | |
 |---|---|
@@ -74,6 +84,8 @@ one-liner: this app is used by a 70-year-old, not a 20-year-old — so we design
 ---
 
 ## Slide 5 — Feature: the daily schedule
+*Scores: F · T*
+
 
 - Doses are **computed, not pre-generated**: active medicines × their times, joined with what was marked.
 - Status per dose: **Pending → Missed** automatically an hour past the time.
@@ -87,6 +99,8 @@ Also: one row per dose is impossible to duplicate because only *marking* writes.
 ---
 
 ## Slide 6 — Feature: marking a dose (senior-first interaction)
+*Scores: F · U*
+
 
 - The **Taken** button is the largest element on the card. Skip is secondary and visually distinct.
 - Marking shows a big confirmation: "✓ Metformin marked as taken at 8:05 PM" with a visible **Undo**
@@ -101,6 +115,8 @@ A visible Undo is both kinder and safer.
 ---
 
 ## Slide 7 — Feature: adherence and alerts
+*Scores: F · I*
+
 
 - **Adherence**: taken / skipped / missed / pending, a percentage that excludes doses not yet due, a
   7-day stacked chart, a streak, and a per-medicine breakdown.
@@ -115,6 +131,8 @@ A visible Undo is both kinder and safer.
 ---
 
 ## Slide 8 — Feature: family and invitations
+*Scores: F · I*
+
 
 - Caregiver invites by email → the invite list shows **Invited / Joined / Said no**; cancel and re-invite.
 - The invited person sees "**Priya invited you to join the Sharma family**" → Yes (name + optional DOB)
@@ -128,6 +146,8 @@ A visible Undo is both kinder and safer.
 ---
 
 ## Slide 9 — Roles and who can do what
+*Scores: F · T*
+
 
 | | Caregiver | Member |
 |---|---|---|
@@ -144,6 +164,8 @@ A visible Undo is both kinder and safer.
 ---
 
 ## Slide 10 — Validation: "duplicate or conflicting entries" (the required bit)
+*Scores: F · T*
+
 
 1. **Duplicate medicine** (same person, name, strength, overlapping dates) → **409** with a message that
    names the existing entry and tells you what to do instead.
@@ -164,6 +186,8 @@ the field**, in plain words, saying how to fix it — never a code.
 ---
 
 ## Slide 11 — UI/UX & Frontend Design: usability and visual consistency
+*Scores: U*
+
 
 The rubric asks for *interface quality, responsiveness, usability, visual consistency, navigation and
 overall user experience*. Concretely, that means:
@@ -195,6 +219,8 @@ shared token file, which we can open and show.
 ---
 
 ## Slide 12 — The psychology behind the design (Laws of UX)
+*Scores: U · I*
+
 
 **Every design decision here is traceable to a known principle** — the 30 laws from
 [lawsofux.com](https://lawsofux.com/) (Jon Yablonski).
@@ -231,6 +257,8 @@ misused that way. Its real lesson is **chunking**, so we group instead, and ever
 ---
 
 ## Slide 13 — 23 languages, live
+*Scores: F · I*
+
 
 - English plus the **22 scheduled languages of India** — Hindi, Bengali, Telugu, Marathi, Tamil, Urdu,
   Gujarati, Kannada, Malayalam, Odia, Punjabi, Assamese, Maithili, Santali, Kashmiri, Nepali, Konkani,
@@ -248,6 +276,8 @@ native review before real-world use. Saying this makes the rest of your claims m
 ---
 
 ## Slide 14 — The AI parts (and why they don't break)
+*Scores: T · I*
+
 
 **Missed-dose summary** — facts computed in code first: missed/skipped per medicine, which times of day
 are missed most, weekday patterns, streak. Groq then writes 2–4 friendly sentences with one tip.
@@ -270,6 +300,8 @@ Theme 5, applied here.
 ---
 
 ## Slide 15 — Architecture
+*Scores: T*
+
 
 ```
 Astro static build (Preact islands; supabase-js for sign-in only)
@@ -294,6 +326,8 @@ would live in the browser. One place to enforce rules is the point.
 ---
 
 ## Slide 16 — Technical implementation and code structure
+*Scores: T*
+
 
 The rubric asks about *HTML/CSS/JavaScript/framework quality, backend integration, database/API
 implementation, code structure and technical execution*.
@@ -328,6 +362,8 @@ JavaScript you don't ship.
 ---
 
 ## Slide 17 — Database design
+*Scores: T*
+
 
 `Family` · `Profile` · `AppUser` (caregiver | member) · `Medicine` · `ScheduleTime` · `DoseLog` ·
 `Invitation` · `Translation`
@@ -345,23 +381,32 @@ Three decisions:
 
 ---
 
-## Slide 18 — Innovation
+## Slide 18 — Innovation: additional useful features and problem-solving approach
+*Scores: I*
 
-- **Senior-first, not senior-friendly-later.** The whole UI is built to the constraints above because
-  the primary user is elderly.
-- **23 Indian languages with RTL** — including medicine instructions translated while the original stays
-  visible.
-- **It notices before you do** — refill prediction from tablet stock, adherence alerts, and a weekly
-  summary written in the user's language.
-- **AI that cannot break the demo** — every AI path has a deterministic fallback.
-- **Same codebase, web and Android** — static build, one build command.
-- **Printable weekly chart** for the fridge — a paper feature for a real household.
+**Problem-solving approach (the decisions, not the features)**
+- **Senior-first, not senior-friendly-later.** Accessibility is a requirement, so it overrides the
+  decorative style wherever the two conflict.
+- **Complexity moved into the code, not onto the user.** Doses, timezones and the 30-minute timing
+  conflict are all computed server-side (Tesler's Law, slide 12).
+- **AI that cannot break the demo.** Every AI path has a deterministic fallback, so the clever parts are
+  additive rather than load-bearing.
+- **Honest scope.** We can name exactly what we chose not to build, and why (slide 21).
 
-→ Pick the two the judges will remember and repeat them in the closing slide.
+**Additional useful features (beyond what the brief asked for)**
+- **23 Indian languages with RTL** — instructions translated, with the English original kept visible.
+- **It notices before you do** — refill prediction from tablet stock, plus family adherence alerts.
+- **Printable weekly chart** — a paper feature for a real household, for the fridge or the pharmacist.
+- **Same codebase, web and Android** — one static build, ready to wrap.
+
+→ Lead with the **problem-solving** bullets, not the feature list. The rubric asks for "creativity,
+originality, additional useful features, problem-solving approach" — and the decision to treat
+accessibility as a hard constraint is the actual originality here, not any single feature.
 
 ---
 
-## Slide 19 — Live demo (the flow)
+## Slide 19 — Live demo: clarity of demonstration
+*Scores: I*
 
 1. **Language first** — pick Hindi; the whole app flips, layout included.
 2. **Sign up / sign in** → Welcome with a pending invitation.
@@ -375,6 +420,10 @@ Three decisions:
 7. **It notices before you do** — "Metformin runs out in about 3 days (7 left)".
 8. **Print** — the weekly chart, ready for the fridge.
 
+**What this demo is proving, in rubric terms:** completeness of the required features, functional
+correctness and validation, and clarity of demonstration — the three things a rubric can only score by
+watching you use the app.
+
 **Have these two ready:** a copy of the app already open, and seed data reloaded.
 
 → Rehearse this twice. The duplicate-rejection and the warning-but-saves are the two moments that prove
@@ -383,6 +432,8 @@ the required validation; don't rush them.
 ---
 
 ## Slide 20 — Rubric mapping, in the judges' own words
+*Scores: F · U · T · I*
+
 
 **1 · Functionality & Requirements** — *completeness of the required features, correctness of
 functionality, and whether the solution addresses the given problem statement*
@@ -419,6 +470,8 @@ ability to explain technical decisions → the demo and the backup slides.
 ---
 
 ## Slide 21 — Scope and what's next
+*Scores: I*
+
 
 **Not built (deliberately):** push notifications with the browser fully closed, the iOS build, SMS/email
 reminders, drug-interaction checking, offline mode, multi-family users.
