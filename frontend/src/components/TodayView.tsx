@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { type ApiError, api, type Dose, type Profile, post, type Schedule } from "../lib/api";
 import { addDays, firstName, fmtDay, fmtLongDate, fmtTime } from "../lib/format";
+import { enableReminders, reminderState } from "../lib/notifications";
 import { useMe } from "../lib/session";
 import { DoseCard, minutes } from "./DoseCard";
 import { Icon } from "./Icon";
@@ -24,6 +25,7 @@ export default function TodayView() {
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
   const toastTimer = useRef<number>();
+  const [reminders, setReminders] = useState(reminderState());
 
   const load = useCallback(async () => {
     const q = new URLSearchParams();
@@ -120,6 +122,22 @@ export default function TodayView() {
       </nav>
 
       {error && <ErrorNotice text={error} />}
+
+      {isToday && reminders === "off" && (
+        <div class="notice notice-info">
+          <Icon name="bell" />
+          <div>
+            <p>Get a notification when it's time for a medicine.</p>
+            <button
+              type="button"
+              class="btn btn-primary"
+              onClick={async () => setReminders(await enableReminders())}
+            >
+              Turn on reminders
+            </button>
+          </div>
+        </div>
+      )}
 
       {due.length > 0 && (
         <div class="due-banner" role="status">

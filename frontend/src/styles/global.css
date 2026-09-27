@@ -708,3 +708,33 @@ fieldset.pick-row {
   padding: 0;
   margin: 0;
 }
+
+.tab-icon {
+  position: relative;
+  display: inline-flex;
+}
+.tab-badge {
+  position: absolute;
+  top: -0.4rem;
+  right: -0.9rem;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.3rem;
+  border-radius: var(--radius-pill);
+  background: var(--missed);
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  text-align: center;
+}
+.section-title {
+  margin-top: var(--space-5);
+}
+.card-legend {
+  float: left;
+  width: 100%;
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}

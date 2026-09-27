@@ -1,0 +1,8 @@
+---
+import FamilyView from "../components/FamilyView";
+import AppLayout from "../layouts/AppLayout.astro";
+---
+
+<AppLayout title="Family" nav="family">
+  <FamilyView client:only="preact" />
+</AppLayout>
