@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.claude/settings.local.json
+node_modules/
+dist/
+.astro/
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.db
