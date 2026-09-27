@@ -148,8 +148,8 @@ OpenAPI docs at `/docs` are part of the demo.
 
 - **Feel:** calm, natural, reassuring. Soft off-white "paper" background with subtle leaf-green and sage tones, warm
   neutrals, rounded organic shapes (large radii, pill-shaped buttons — fitting the name), gentle shadows, soft leaf/
-  botanical line illustrations for empty states and the login page. Generous whitespace, large readable type (older
-  family members are users), minimum 44 px tap targets.
+  botanical line illustrations for empty states and the login page. Generous whitespace. The organic style is the
+  *mood*; senior-friendly rules (§10a) always win where they conflict.
 - **Dose status colours (fixed, colour-blind-safe Okabe–Ito palette):**
 
   | Status | Colour | Hex | Icon |
@@ -159,9 +159,11 @@ OpenAPI docs at `/docs` are part of the demo.
   | Pending | Sky Blue | `#56B4E9` | ⏳ hourglass |
   | Missed | Vermillion | `#D55E00` | ❌ cross |
 
-  Status is **never shown by colour alone** — always colour + icon + text label. Text on these colours is checked for
-  WCAG AA contrast (dark text on Sky Blue/Orange, white on Blue/Vermillion where it passes, otherwise the colour is used
-  for the chip border/icon with dark text).
+  Status is **never shown by colour alone** — always colour + icon + text label. Measured contrast (WCAG): white text
+  passes only on Blue (5.2:1); Orange/Sky Blue need dark text; **Vermillion fails with both white (3.9:1) and dark
+  (3.8:1) text.** So status chips and cards use a **light tint of the status colour as background, a solid status-colour
+  left border and icon, and near-black text** (`#1F2A24`) — giving ≥ 7:1 text contrast for every status. The solid colours
+  are used for icons, borders, and chart bars (with labels), not behind text.
 - **Design tokens** are CSS custom properties in one `tokens.css` (brand greens, neutrals, status colours, radii,
   spacing), used across all pages; charts reuse the status colours.
 - **Pages:** Login · Today (timeline grouped by time per family member, Taken/Skip buttons, person filter, date
@@ -169,6 +171,50 @@ OpenAPI docs at `/docs` are part of the demo.
   (% ring, 7-day stacked bar chart in status colours, streak, per-medicine breakdown, AI summary card).
 - Responsive, mobile-first; keyboard-accessible; `prefers-reduced-motion` respected.
 - Footer disclaimer: "For reminders only — not medical advice."
+
+## 10a. Senior-friendly UI (primary users are older adults)
+
+Many users are elderly (members marking their own doses; often caregivers too). These rules are requirements, not
+polish, and override the decorative style wherever they conflict.
+
+**Reading**
+- Base font size **20 px** (body), headings 26–32 px, never below 16 px anywhere (including chart labels, captions,
+  timestamps). Line height 1.5. All sizes in `rem`, so Android/OS "large text" settings scale the app further.
+- **In-app text size control** (Normal / Large / Extra large) on the Profile page, saved per device.
+- Text contrast **≥ 7:1 (WCAG AAA)** for body text; no light-grey text; no text over images or patterns.
+- Clear sans-serif font (Atkinson Hyperlegible — designed for low vision), regular/semibold weights only.
+- Plain language: "Take 1 tablet after breakfast", not "1 tab PO pc". Times shown as **8:00 AM** (12-hour with AM/PM),
+  dates as "Today", "Yesterday", "Mon 28 Sep" — no ISO dates in the UI.
+
+**Touching**
+- Tap targets **≥ 56 px** high, full-width primary buttons on mobile, ≥ 12 px spacing between tappable items.
+- The **Taken** button is the largest element on each dose card; **Skip** is secondary and visually distinct.
+- No swipe-only, long-press, double-tap, or drag gestures — every action is a visible, labelled button.
+- No auto-dismissing content that requires action; no session timeouts during a task.
+
+**Understanding**
+- Every icon has a visible **text label** (bottom tabs: icon + word).
+- One main task per screen; the member's Today page shows **only their own doses as big cards**, "next dose" at the
+  top, with nothing else competing.
+- Each dose card shows medicine name, strength, instructions, and time in large type; the person's name is shown
+  large on caregiver views so nobody marks the wrong person's dose.
+- **Forgiving actions:** marking a dose shows a large confirmation ("✓ Metformin marked as taken at 8:05 AM") with a
+  big **Undo** button kept visible for 10 s — instead of "Are you sure?" dialogs. Destructive actions (delete
+  medicine/profile) use a clear confirm screen stating exactly what will be deleted.
+- Error messages in plain words next to the field, saying how to fix it ("This medicine is already added for Grandpa
+  from 1 Sep. Edit the existing one instead?"), never codes.
+- Forms: labels always visible above fields (no placeholder-only labels), large inputs, native date/time pickers,
+  medicine autocomplete with big suggestion rows, sensible defaults (start date = today).
+- Consistent layout and navigation on every page; the same thing is always in the same place.
+
+**Reminders**
+- Notification text is self-contained and readable: "Grandpa: time for Metformin 500 mg — 1 tablet after food (8:00 PM)".
+- A dose still pending 15 min after its time gets **one follow-up reminder**.
+- The in-app "due now" banner is large, high-contrast, and names the medicine.
+
+**Verification**
+- Lighthouse accessibility score ≥ 95 on every page; manual check at 200 % text size (no clipped or overlapping text);
+  one run-through with a real older person if at all possible before the demo.
 
 ## 11. Mobile app (Capacitor)
 
@@ -184,7 +230,7 @@ The same frontend must ship as an Android app via Capacitor, so the frontend is 
 - **Auth:** email/password only (no OAuth redirects), so supabase-js works unchanged in the WebView; the session is
   persisted in WebView storage.
 - **Mobile UI rules:** `viewport-fit=cover` + CSS `env(safe-area-inset-*)` padding; bottom tab bar navigation on small
-  screens (Today · Medicines · Adherence · Profile); 44 px+ tap targets; no hover-only interactions; native date/time
+  screens (Today · Medicines · Adherence · Profile), icon + text label; 56 px+ tap targets (§10a); no hover-only interactions; native date/time
   inputs; Android back button handled via `@capacitor/app` (goes back, exits on the Today page).
 - **Plugins:** `@capacitor/local-notifications`, `@capacitor/app`, `@capacitor/status-bar` (status bar tinted to the
   leaf-green theme), `@capacitor/splash-screen` (leaf logo).
