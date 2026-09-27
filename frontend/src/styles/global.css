@@ -344,3 +344,232 @@ select[aria-invalid="true"] {
     box-shadow: none;
   }
 }
+
+/* ---------- Today ---------- */
+.day-head h1 {
+  margin-bottom: 0;
+}
+.day-date {
+  font-size: var(--fs-body);
+}
+.day-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+.day-nav .btn {
+  flex: 1 1 10rem;
+}
+.due-banner {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: #fff;
+  font-size: var(--fs-lg);
+}
+.due-banner svg {
+  width: 2.25rem;
+  height: 2.25rem;
+  flex: none;
+}
+.due-banner p {
+  margin: 0;
+  font-size: var(--fs-body);
+}
+.person-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  border: 0;
+  padding: 0;
+  margin: 0 0 var(--space-4);
+}
+.person-filter legend {
+  font-weight: 700;
+  margin-bottom: var(--space-1);
+}
+.chip {
+  min-height: var(--tap);
+  padding: 0 var(--space-4);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.chip[aria-pressed="true"] {
+  background: var(--primary);
+  color: #fff;
+}
+.progress-line {
+  font-size: var(--fs-lg);
+}
+.time-group {
+  margin-bottom: var(--space-5);
+}
+.time-heading {
+  font-family: var(--font-body);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--text-muted);
+  border-bottom: 2px solid var(--border);
+  padding-bottom: var(--space-1);
+}
+
+/* Dose card: tinted background + solid left border + icon badge + text label (never colour alone) */
+.dose {
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  border-left: 0.5rem solid;
+  box-shadow: var(--shadow);
+}
+.dose-taken {
+  background: var(--taken-tint);
+  border-left-color: var(--taken);
+}
+.dose-skipped {
+  background: var(--skipped-tint);
+  border-left-color: var(--skipped);
+}
+.dose-pending {
+  background: var(--pending-tint);
+  border-left-color: var(--pending);
+}
+.dose-missed {
+  background: var(--missed-tint);
+  border-left-color: var(--missed);
+}
+.dose-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-2);
+}
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: 700;
+}
+.badge-dot {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+}
+.badge-dot svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+/* glyph colours chosen for >=3:1 against each solid status colour */
+.badge-taken .badge-dot {
+  background: var(--taken);
+  color: #fff;
+}
+.badge-skipped .badge-dot {
+  background: var(--skipped);
+  color: var(--text);
+}
+.badge-pending .badge-dot {
+  background: var(--pending);
+  color: var(--text);
+}
+.badge-missed .badge-dot {
+  background: var(--missed);
+  color: #fff;
+}
+.dose-time {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+.dose-person {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+.dose-name {
+  font-family: var(--font-body);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  margin: 0;
+}
+.dose-strength {
+  font-weight: 400;
+}
+.dose-instructions {
+  margin: var(--space-1) 0 var(--space-3);
+}
+.dose-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.dose-actions .btn {
+  flex: 1 1 8rem;
+}
+.dose-actions .btn-take {
+  flex: 2 1 12rem;
+  min-height: 4rem;
+  font-size: var(--fs-lg);
+}
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  text-align: center;
+  color: var(--text-muted);
+}
+.empty > svg {
+  width: 3rem;
+  height: 3rem;
+  color: var(--primary);
+}
+
+/* Undo toast: large, sits above the bottom tab bar, stays 10 s */
+.toast-region {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(5rem + env(safe-area-inset-bottom));
+  z-index: 6;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--space-3);
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  width: min(100%, var(--content));
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--text);
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+.toast > svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+.toast span {
+  flex: 1 1 12rem;
+}
+@media (min-width: 60rem) {
+  .toast-region {
+    bottom: var(--space-4);
+  }
+}

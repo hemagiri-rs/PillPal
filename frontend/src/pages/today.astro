@@ -1,7 +1,8 @@
 ---
+import TodayView from "../components/TodayView";
 import AppLayout from "../layouts/AppLayout.astro";
 ---
 
 <AppLayout title="Today" nav="today">
-  <h1>Today</h1>
+  <TodayView client:only="preact" />
 </AppLayout>
