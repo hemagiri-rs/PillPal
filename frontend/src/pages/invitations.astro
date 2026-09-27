@@ -1,0 +1,8 @@
+---
+import InvitationsView from "../components/InvitationsView";
+import AppLayout from "../layouts/AppLayout.astro";
+---
+
+<AppLayout title="Invitations" nav="invitations">
+  <InvitationsView client:only="preact" />
+</AppLayout>

@@ -8,7 +8,7 @@ import NavBar from "../components/NavBar";
 interface Props {
   title: string;
   /** Pages behind login show the navigation; the login page does not. */
-  nav?: "today" | "medicines" | "progress" | "family" | false;
+  nav?: "today" | "medicines" | "progress" | "invitations" | "family" | false;
 }
 const { title, nav = false } = Astro.props;
 ---

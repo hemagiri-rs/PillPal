@@ -137,20 +137,32 @@ def my_invitations(identity: IdentityDep, session: SessionDep) -> list[MyInviteO
 @router.post("/invitations/{invitation_id}/accept")
 def accept(invitation_id: int, body: PersonIn, identity: IdentityDep, session: SessionDep) -> dict:
     inv = _my_pending(session, identity, invitation_id)
-    _ensure_not_in_family(session, identity)
+    user = session.get(AppUser, identity.id)
+    if user and user.role == Role.caregiver:
+        raise _conflict(
+            "You look after a family in PillPal, so you can't join another one. "
+            "Ask the person who invited you to join your family instead."
+        )
+    if user and user.family_id == inv.family_id:
+        raise _conflict("You are already in this family.")
     # The profile (and so reminders) only exists once the person says yes.
     profile = Profile(family_id=inv.family_id, name=body.name, date_of_birth=body.date_of_birth)
     session.add(profile)
     session.flush()
-    session.add(
-        AppUser(
-            id=identity.id,
-            email=identity.email,
-            role=Role.member,
-            family_id=inv.family_id,
-            profile_id=profile.id,
+    if user:
+        # A member switches family: their old profile stays with the old family's caregiver.
+        user.family_id, user.profile_id = inv.family_id, profile.id
+        session.add(user)
+    else:
+        session.add(
+            AppUser(
+                id=identity.id,
+                email=identity.email,
+                role=Role.member,
+                family_id=inv.family_id,
+                profile_id=profile.id,
+            )
         )
-    )
     inv.status = InviteStatus.accepted
     inv.responded_at = utcnow()
     session.add(inv)

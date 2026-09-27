@@ -5,13 +5,14 @@ import { remindDue } from "../lib/notifications";
 import { useMe } from "../lib/session";
 import { Icon, type IconName } from "./Icon";
 
-type Tab = "today" | "medicines" | "progress" | "family";
+type Tab = "today" | "medicines" | "progress" | "invitations" | "family";
 
 export default function NavBar({ active }: { active: Tab }) {
   const t = useT();
   const { me } = useMe();
   const member = me?.role === "member";
   const [dueCount, setDueCount] = useState(0);
+  const [inviteCount, setInviteCount] = useState(0);
 
   // Every page watches today's schedule: badge on the Today tab + browser reminders.
   useEffect(() => {
@@ -23,8 +24,17 @@ export default function NavBar({ active }: { active: Tab }) {
           return remindDue(s.doses, s.now, me.role);
         })
         .catch(() => {}); // the page itself shows connection errors
+    const checkInvites = () =>
+      api<unknown[]>("/invitations/mine").then(
+        (l) => setInviteCount(l.length),
+        () => {},
+      );
     check();
-    const id = setInterval(check, 60_000);
+    checkInvites();
+    const id = setInterval(() => {
+      check();
+      checkInvites();
+    }, 60_000);
     return () => clearInterval(id);
   }, [me]);
   const tabs: { id: Tab; href: string; label: string; icon: IconName }[] = [
@@ -41,6 +51,7 @@ export default function NavBar({ active }: { active: Tab }) {
       label: member ? t("How am I doing?") : t("Progress"),
       icon: "chart",
     },
+    { id: "invitations", href: "/invitations", label: t("Invites"), icon: "mail" },
     {
       id: "family",
       href: "/family",
@@ -48,6 +59,8 @@ export default function NavBar({ active }: { active: Tab }) {
       icon: "users",
     },
   ];
+
+  const badge = (id: Tab) => (id === "today" ? dueCount : id === "invitations" ? inviteCount : 0);
 
   return (
     <header class="topbar">
@@ -71,9 +84,9 @@ export default function NavBar({ active }: { active: Tab }) {
               <a href={tab.href} aria-current={tab.id === active ? "page" : undefined}>
                 <span class="tab-icon">
                   <Icon name={tab.icon} />
-                  {tab.id === "today" && dueCount > 0 && (
+                  {badge(tab.id) > 0 && (
                     <span class="tab-badge" aria-hidden="true">
-                      {dueCount}
+                      {badge(tab.id)}
                     </span>
                   )}
                 </span>
@@ -81,6 +94,11 @@ export default function NavBar({ active }: { active: Tab }) {
                 {tab.id === "today" && dueCount > 0 && (
                   <span class="sr-only">
                     , {t("{count} medicine(s) due now", { count: dueCount })}
+                  </span>
+                )}
+                {tab.id === "invitations" && inviteCount > 0 && (
+                  <span class="sr-only">
+                    , {t("{count} new invitation(s)", { count: inviteCount })}
                   </span>
                 )}
               </a>

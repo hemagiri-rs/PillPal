@@ -135,7 +135,24 @@ def test_only_matching_email_can_answer(client_as, cg):
     assert stranger.post(f"/invitations/{iid}/decline").status_code == 404
 
 
-def test_cannot_accept_when_already_in_a_family(client_as, cg, session):
+def test_member_can_switch_family(client_as, cg, session):
+    other = Family(name="Other")
+    session.add(other)
+    session.commit()
+    from tests.conftest import make_profile
+
+    old_profile = make_profile(session, other, "Meena")
+    meena = make_user(session, other, Role.member, old_profile)
+    iid = cg.post("/invitations", json={"email": meena.email}).json()["id"]
+    assert [i["id"] for i in client_as(meena).get("/invitations/mine").json()] == [iid]
+    r = client_as(meena).post(f"/invitations/{iid}/accept", json={"name": "Meena S"})
+    assert r.status_code == 200, r.text
+    session.refresh(meena)
+    assert meena.family_id != other.id
+    assert session.get(type(old_profile), old_profile.id) is not None  # old profile kept
+
+
+def test_caregiver_cannot_accept_invite(client_as, cg, session):
     other = Family(name="Other")
     session.add(other)
     session.commit()
