@@ -108,7 +108,10 @@ def groq_summary(facts: dict) -> str:
         json={
             "model": settings.groq_model,
             "temperature": 0.4,
-            "max_tokens": 220,
+            # gpt-oss models reason before answering; the budget must cover both.
+            "max_completion_tokens": 1024,
+            "reasoning_effort": "low",
+            "include_reasoning": False,
             "messages": [
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": json.dumps(facts)},
