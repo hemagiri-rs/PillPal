@@ -20,17 +20,19 @@ with the AI summary of missed doses → log in as a member and see only their ow
 ## 2. Architecture
 
 ```
-Astro frontend (Preact islands, supabase-js for login only, service worker for notifications)
+Astro static build (Preact islands, supabase-js for login only)
+   ├─ Web: browser + service worker notifications
+   └─ Mobile: same build wrapped by Capacitor (Android) + native local notifications
         │  REST + Authorization: Bearer <Supabase JWT>
         ▼
 FastAPI backend (SQLModel) ── verifies JWT, applies roles + validation
         │                 ├──► NLM RxTerms API (drug-name autocomplete, free, no key)
-        │                 └──► Claude API (missed-dose summary, optional)
+        │                 └──► Groq API (missed-dose summary, optional)
         ▼  DATABASE_URL (Postgres)
 Supabase Postgres  (+ Supabase Auth for users/passwords)
 ```
 
-- **Repo layout:** `frontend/` (Astro) and `backend/` (FastAPI) in one GitHub repo.
+- **Repo layout:** `frontend/` (Astro + Capacitor `android/` project) and `backend/` (FastAPI) in one GitHub repo.
 - **All data access goes through FastAPI.** The frontend uses supabase-js only for sign-in/sign-out and to obtain the
   access token.
 - FastAPI verifies the Supabase JWT, reads `sub` (auth user id), and looks up the app `User` row for role and family.
@@ -112,16 +114,18 @@ OpenAPI docs at `/docs` are part of the demo.
 - **Endpoint** `POST /insights/missed-summary` gathers the profile's doses in the range (default last 7 days) and
   computes the facts in code first: missed/skipped counts per medicine, which times of day are most often missed,
   weekday patterns, and streak.
-- **LLM:** the Claude API (model set by the `AI_MODEL` env var) turns those facts into a short, friendly 2–4 sentence
+- **LLM:** the **Groq** API (free tier, OpenAI-compatible chat completions endpoint, called from the backend with
+  `httpx`; model set by the `GROQ_MODEL` env var — the default is picked from Groq's current model list at build
+  time) turns those facts into a short, friendly 2–4 sentence
   summary with one practical tip (e.g. "Evening doses are missed most — try pairing them with dinner"). The prompt
   forbids medical advice (no dosage changes, no "stop taking"), and the UI shows a "not medical advice" line under it.
 - **Privacy:** only the profile's first name, medicine names, and dose times/statuses are sent — no date of birth,
   notes, or email.
-- **Fallback:** if `ANTHROPIC_API_KEY` is unset or the call fails/times out (10 s), the endpoint returns a rule-based
+- **Fallback:** if `GROQ_API_KEY` is unset or the call fails/times out (10 s), the endpoint returns a rule-based
   summary built from the same facts, flagged `"source": "rules"`. The feature always works in the demo.
 - Summaries are generated on request (a button on the Adherence page), not on every page load.
 
-## 9. Browser notifications
+## 9. Notifications (web + mobile)
 
 - **Permission** is requested only when the user clicks "Enable reminders" (never on page load); the state is shown
   in the header (on / off / blocked, with a hint for blocked).
@@ -131,8 +135,14 @@ OpenAPI docs at `/docs` are part of the demo.
   fires a notification ("Grandpa — Metformin 500 mg, 1 tablet after food, due 8:00 PM"). A per-dose "already
   notified" set in `localStorage` prevents repeats.
 - In-app banner + badge for due/overdue doses remain as the fallback when notifications are off or unsupported.
-- **Limitation (stated in the demo):** notifications fire while the app is open in some tab. Reminders with the browser
-  fully closed need Web Push (VAPID + push service), which is out of scope for 2 days.
+- **Limitation on web (stated in the demo):** notifications fire while the app is open in some tab. Reminders with
+  the browser fully closed need Web Push (VAPID + push service), which is out of scope for 2 days.
+- **Mobile (Capacitor):** the service worker and web `Notification` API don't work inside the Capacitor WebView, so
+  the app uses **`@capacitor/local-notifications`** instead. After login and after any medicine/dose change, the app
+  schedules the next 24 h of pending doses as native local notifications (cancelling and rescheduling, ids derived
+  from medicine + date + time). These fire **even when the app is closed** — a stronger demo than the web version.
+- One small `notifications.ts` module picks the implementation with `Capacitor.isNativePlatform()`; pages call only
+  `enableReminders()` and `syncReminders(schedule)`.
 
 ## 10. UI design — organic / biophilic
 
@@ -160,30 +170,51 @@ OpenAPI docs at `/docs` are part of the demo.
 - Responsive, mobile-first; keyboard-accessible; `prefers-reduced-motion` respected.
 - Footer disclaimer: "For reminders only — not medical advice."
 
-## 11. Code quality & workflow
+## 11. Mobile app (Capacitor)
+
+The same frontend must ship as an Android app via Capacitor, so the frontend is built to these constraints:
+
+- **Static output only:** Astro `output: 'static'`; no SSR, no server endpoints, no Astro actions. All data comes from
+  FastAPI at runtime. Detail views use query params (`/medicine?id=…`) rather than dynamic SSR routes. `npm run build`
+  → `dist/` → `npx cap sync android`.
+- **API base URL** is absolute, from `PUBLIC_API_URL` (e.g. the deployed backend or the laptop's LAN IP during the
+  demo) — never relative paths.
+- **Backend CORS** allows the web origin plus Capacitor's WebView origins (`https://localhost` on Android,
+  `capacitor://localhost` for iOS).
+- **Auth:** email/password only (no OAuth redirects), so supabase-js works unchanged in the WebView; the session is
+  persisted in WebView storage.
+- **Mobile UI rules:** `viewport-fit=cover` + CSS `env(safe-area-inset-*)` padding; bottom tab bar navigation on small
+  screens (Today · Medicines · Adherence · Profile); 44 px+ tap targets; no hover-only interactions; native date/time
+  inputs; Android back button handled via `@capacitor/app` (goes back, exits on the Today page).
+- **Plugins:** `@capacitor/local-notifications`, `@capacitor/app`, `@capacitor/status-bar` (status bar tinted to the
+  leaf-green theme), `@capacitor/splash-screen` (leaf logo).
+- **Target:** Android debug APK for the demo (built with Android Studio / Gradle). iOS is out of scope — it needs a Mac
+  and an Apple developer account; nothing in the design blocks adding it later.
+
+## 12. Code quality & workflow
 
 - **Frontend:** **Biome** for lint + format (`biome.json` in `frontend/`); `npm run check` = `biome check .` + `astro check`.
 - **Backend:** **Ruff** for lint + format (config in `backend/pyproject.toml`); `ruff check .` and `ruff format --check .`.
 - Type hints throughout the backend; Pydantic/SQLModel schemas for all request/response bodies; secrets only in
   `.env` (git-ignored) with a committed `.env.example`.
-- **GitHub Actions CI** on every push: Biome + astro check (frontend), Ruff + pytest (backend).
+- **GitHub Actions CI** on every push: Biome + astro check (frontend, including a static `astro build` to prove Capacitor-compatibility), Ruff + pytest (backend).
 - **Git:** small commits, each run through Biome/Ruff first, and **pushed to GitHub (`origin`
   = github.com/hemagiri-rs/PillPal) after every commit.**
 
-## 12. Testing & seed data
+## 13. Testing & seed data
 
 - **pytest** (FastAPI TestClient, SQLite in-memory, auth dependency overridden): each validation rule in §5, role
   checks in §3, schedule computation (pending/missed/taken), adherence math, `/drugs/suggest` with the upstream mocked
-  (success + failure → `[]`), missed-summary facts and the rules fallback (AI mocked).
+  (success + failure → `[]`), missed-summary facts and the rules fallback (Groq mocked).
 - **Seed script:** 1 family, 1 caregiver + 3 members (Supabase auth users + app rows), ~6 medicines, 7 days of dose
   history with a mix of taken/skipped/missed so charts and the AI summary look real.
 
-## 13. Out of scope
+## 14. Out of scope
 
-Web Push with the browser closed, SMS/email, drug-interaction checks, refill/stock tracking, multi-family users,
+Web Push with the browser closed, iOS build, SMS/email, drug-interaction checks, refill/stock tracking, multi-family users,
 offline mode.
 
-## 14. Stretch (if time remains, in priority order)
+## 15. Stretch (if time remains, in priority order)
 
 1. "Caregiver alert" card: members with adherence < 80 % this week.
 2. Printable weekly schedule view (for the fridge or pharmacist).
