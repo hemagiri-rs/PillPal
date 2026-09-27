@@ -13,14 +13,16 @@ from pydantic import BaseModel
 from app.auth import SessionDep, UserDep, get_accessible_profile
 from app.config import get_settings
 from app.formatting import fmt_date
+from app.groq import groq_chat
+from app.languages import LANGUAGES
 from app.routers.adherence import streak
 from app.routers.doses import NowDep, family_now
+from app.routers.translate import translate_texts
 from app.schedule import DoseItem, build_schedule
 
 router = APIRouter(tags=["insights"])
 log = logging.getLogger(__name__)
 
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 SYSTEM_PROMPT = """You write short, warm summaries of medicine-taking for a family reminder app.
 Readers may be elderly: use simple words and short sentences.
 Write 2-4 sentences from the JSON facts, then one practical habit tip (e.g. linking a dose to a
@@ -32,6 +34,7 @@ Plain text only, no lists, no markdown."""
 
 class SummaryIn(BaseModel):
     profile_id: int
+    lang: str = "en"
     start: date | None = None
     end: date | None = None
 
@@ -100,34 +103,16 @@ def rules_summary(f: dict) -> str:
     return " ".join(parts)
 
 
-def groq_summary(facts: dict) -> str:
-    settings = get_settings()
-    r = httpx.post(
-        GROQ_URL,
-        headers={"Authorization": f"Bearer {settings.groq_api_key}"},
-        json={
-            "model": settings.groq_model,
-            "temperature": 0.4,
-            # gpt-oss models reason before answering; the budget must cover both.
-            "max_completion_tokens": 1024,
-            "reasoning_effort": "low",
-            "include_reasoning": False,
-            "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": json.dumps(facts)},
-            ],
-        },
-        timeout=10,
-    )
-    r.raise_for_status()
-    text = r.json()["choices"][0]["message"]["content"].strip()
-    if not text:
-        raise ValueError("empty completion")
-    return text
+def groq_summary(facts: dict, lang: str = "en") -> str:
+    language = LANGUAGES[lang][0]
+    system = SYSTEM_PROMPT + f"\nWrite the whole reply in {language}, in the {language} script."
+    return groq_chat(system, json.dumps(facts, ensure_ascii=False))
 
 
 @router.post("/insights/missed-summary")
 def missed_summary(body: SummaryIn, user: UserDep, session: SessionDep, now: NowDep) -> SummaryOut:
+    if body.lang not in LANGUAGES:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Unsupported language.")
     profile = get_accessible_profile(session, user, body.profile_id)
     local_now = family_now(session, user, now)
     end = body.end or local_now.date()
@@ -144,7 +129,10 @@ def missed_summary(body: SummaryIn, user: UserDep, session: SessionDep, now: Now
     # Privacy: only first name, medicine names and dose counts leave the server.
     if get_settings().groq_api_key and facts["missed"] + facts["skipped"] > 0:
         try:
-            return SummaryOut(summary=groq_summary(facts), source="ai", facts=facts)
+            return SummaryOut(summary=groq_summary(facts, body.lang), source="ai", facts=facts)
         except httpx.HTTPError, KeyError, IndexError, ValueError:
             log.warning("Groq summary failed; using rules", exc_info=True)
-    return SummaryOut(summary=rules_summary(facts), source="rules", facts=facts)
+    text = rules_summary(facts)
+    if body.lang != "en":
+        text = translate_texts(session, body.lang, [text], allow_new=True)[text]
+    return SummaryOut(summary=text, source="rules", facts=facts)

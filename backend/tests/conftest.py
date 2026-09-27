@@ -10,6 +10,7 @@ from app.auth import Identity, current_identity, current_user
 from app.db import get_session, make_engine
 from app.main import app
 from app.models import AppUser, Family, Profile, Role
+from app.routers.translate import optional_identity
 
 
 @pytest.fixture
@@ -79,12 +80,16 @@ def client_as(session):
             def request(self, *args, **kwargs):
                 app.dependency_overrides.pop(current_user, None)
                 app.dependency_overrides.pop(current_identity, None)
+                app.dependency_overrides.pop(optional_identity, None)
+                identity = None
                 if isinstance(user, AppUser):
                     app.dependency_overrides[current_user] = lambda: user
                     identity = Identity(id=user.id, email=user.email)
-                    app.dependency_overrides[current_identity] = lambda: identity
                 elif isinstance(user, Identity):
-                    app.dependency_overrides[current_identity] = lambda: user
+                    identity = user
+                if identity is not None:
+                    app.dependency_overrides[current_identity] = lambda: identity
+                    app.dependency_overrides[optional_identity] = lambda: identity
                 return super().request(*args, **kwargs)
 
         return ActingClient(app)

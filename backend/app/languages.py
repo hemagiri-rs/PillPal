@@ -1,0 +1,27 @@
+"""English + the 22 scheduled languages of India. code -> (English name, native name, rtl)."""
+
+LANGUAGES: dict[str, tuple[str, str, bool]] = {
+    "en": ("English", "English", False),
+    "as": ("Assamese", "অসমীয়া", False),
+    "bn": ("Bengali", "বাংলা", False),
+    "brx": ("Bodo", "बड़ो", False),
+    "doi": ("Dogri", "डोगरी", False),
+    "gu": ("Gujarati", "ગુજરાતી", False),
+    "hi": ("Hindi", "हिन्दी", False),
+    "kn": ("Kannada", "ಕನ್ನಡ", False),
+    "ks": ("Kashmiri", "کٲشُر", True),
+    "kok": ("Konkani", "कोंकणी", False),
+    "mai": ("Maithili", "मैथिली", False),
+    "ml": ("Malayalam", "മലയാളം", False),
+    "mni": ("Manipuri", "মৈতৈলোন্", False),
+    "mr": ("Marathi", "मराठी", False),
+    "ne": ("Nepali", "नेपाली", False),
+    "or": ("Odia", "ଓଡ଼ିଆ", False),
+    "pa": ("Punjabi", "ਪੰਜਾਬੀ", False),
+    "sa": ("Sanskrit", "संस्कृतम्", False),
+    "sat": ("Santali", "ᱥᱟᱱᱛᱟᱲᱤ", False),
+    "sd": ("Sindhi", "سنڌي", True),
+    "ta": ("Tamil", "தமிழ்", False),
+    "te": ("Telugu", "తెలుగు", False),
+    "ur": ("Urdu", "اردو", True),
+}

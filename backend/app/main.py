@@ -5,7 +5,17 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.db import init_db
-from app.routers import adherence, doses, drugs, insights, invitations, me, medicines, profiles
+from app.routers import (
+    adherence,
+    doses,
+    drugs,
+    insights,
+    invitations,
+    me,
+    medicines,
+    profiles,
+    translate,
+)
 
 
 @asynccontextmanager
@@ -29,6 +39,7 @@ app.include_router(adherence.router)
 app.include_router(drugs.router)
 app.include_router(insights.router)
 app.include_router(invitations.router)
+app.include_router(translate.router)
 
 
 @app.get("/health")

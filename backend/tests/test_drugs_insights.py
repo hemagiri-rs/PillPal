@@ -100,7 +100,7 @@ def test_summary_uses_groq_when_available(c, grandpa, monkeypatch):
     monkeypatch.setattr(get_settings(), "groq_api_key", "test-key")
     sent = {}
 
-    def fake(facts):
+    def fake(facts, lang="en"):
         sent.update(facts)
         return "Grandpa usually remembers his morning Metformin."
 
@@ -121,7 +121,7 @@ def test_summary_uses_groq_when_available(c, grandpa, monkeypatch):
 def test_summary_falls_back_when_groq_fails(c, grandpa, monkeypatch):
     monkeypatch.setattr(get_settings(), "groq_api_key", "test-key")
 
-    def boom(facts):
+    def boom(facts, lang="en"):
         raise httpx.ReadTimeout("slow")
 
     monkeypatch.setattr(insights, "groq_summary", boom)

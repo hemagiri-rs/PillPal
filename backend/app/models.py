@@ -95,3 +95,14 @@ class Invitation(SQLModel, table=True):
     status: InviteStatus = InviteStatus.pending
     created_at: datetime = Field(default_factory=utcnow, sa_type=DateTime(timezone=True))
     responded_at: datetime | None = Field(default=None, sa_type=DateTime(timezone=True))
+
+
+class Translation(SQLModel, table=True):
+    """Cache of Groq translations of UI strings and user text (e.g. medicine instructions)."""
+
+    __table_args__ = (UniqueConstraint("lang", "source"),)
+
+    id: int | None = Field(default=None, primary_key=True)
+    lang: str = Field(max_length=10)
+    source: str = Field(max_length=500)
+    text: str = Field(max_length=2000)
