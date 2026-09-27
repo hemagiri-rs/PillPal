@@ -151,10 +151,30 @@ Enforced in the API, with database constraints where marked **[DB]**:
 
 ## Getting started
 
-**Prerequisites:** Python 3.14 + [uv](https://docs.astral.sh/uv/), Node 22+, and a Supabase project
-(Postgres + Auth). Groq and RxTerms are optional for local work.
+**Prerequisites:** Python 3.14 + [uv](https://docs.astral.sh/uv/), [bun](https://bun.sh/), and a
+Supabase project (Postgres + Auth). Groq and RxTerms are optional for local work.
 
-### 1. Environment
+### 1. Run both servers with one command
+
+```bash
+./run.sh          # Linux, macOS and Windows Git Bash
+run.bat           # Windows cmd / PowerShell
+```
+
+These start the API with **granian** on `:8000` (docs at `/docs`) and the web app with **bun** on
+`:4321`, install any missing dependencies on first run, and stop both on Ctrl+C.
+
+| Environment variable | Effect |
+|---|---|
+| `API_HOST`, `API_PORT` | Where the API listens (default `127.0.0.1:8000`) |
+| `WEB_PORT` | Where the web app listens (default `4321`) |
+| `RELOAD=0` | Turn off auto-reload |
+| `LAN=1` | Also bind the web app to your LAN (for the phone / Android demo) |
+| `FORCE=1` | Replace an `astro dev` server that is already running |
+
+The steps below are what those scripts do, if you would rather run things by hand.
+
+### 2. Environment
 
 The whole repo shares one `.env` at the root (git-ignored). Copy the template and fill it in:
 
@@ -176,19 +196,22 @@ A local run with SQLite needs almost nothing filled in; the Supabase values are 
 
 Frontend config must be set when the site is **built** — Astro inlines `PUBLIC_*` at build time.
 
-### 2. Backend
+### 3. Backend
 
 ```bash
 cd backend
 uv sync
-uv run uvicorn app.main:app --reload
+uv run granian --interface asgi app.main:app --reload    # what run.sh uses
+uv run uvicorn app.main:app --reload                      # equivalent, also installed
 ```
+
+> granian resolves the app target from the working directory, so run it from `backend/`.
 
 - API: <http://localhost:8000> · docs: <http://localhost:8000/docs>
 - Tables are created automatically on startup (`SQLModel.metadata.create_all`).
 - On Supabase, apply `backend/migrations/*.sql` (in order) to create the schema and enable RLS.
 
-### 3. Seed demo data
+### 4. Seed demo data
 
 Creates the "Sharma Family": a caregiver, three member logins, seven medicines and seven days of dose
 history with a realistic mix of taken/skipped/missed. Requires `SUPABASE_SERVICE_ROLE_KEY`.
@@ -206,12 +229,12 @@ uv run python -m app.prewarm          # all languages
 uv run python -m app.prewarm hi ta     # just some
 ```
 
-### 4. Frontend
+### 5. Frontend
 
 ```bash
 cd frontend
-npm install
-npm run dev      # http://localhost:4321
+npm install            # CI uses npm, so package-lock.json is the source of truth
+npm run dev            # http://localhost:4321   (or: bun run dev)
 ```
 
 ## Testing and code quality
