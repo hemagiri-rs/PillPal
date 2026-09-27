@@ -46,6 +46,8 @@ class MedicineFields(BaseModel):
     end_date: date | None = None
     active: bool = True
     times: list[time] = Field(min_length=1, max_length=8)
+    pills_left: int | None = Field(default=None, ge=0, le=10000)
+    pills_per_dose: int = Field(default=1, ge=1, le=20)
 
     @field_validator("name", "strength", "instructions")
     @classmethod
@@ -85,6 +87,8 @@ class MedicineUpdate(BaseModel):
     end_date: date | None = None
     active: bool | None = None
     times: list[time] | None = None
+    pills_left: int | None = None
+    pills_per_dose: int | None = None
 
 
 class MedicineOut(BaseModel):
@@ -98,4 +102,7 @@ class MedicineOut(BaseModel):
     end_date: date | None
     active: bool
     times: list[time]
+    pills_left: int | None
+    pills_per_dose: int
+    days_left: int | None = None  # how many days the stock lasts at the current schedule
     warnings: list[str] = []

@@ -54,6 +54,8 @@ class Medicine(SQLModel, table=True):
     start_date: date
     end_date: date | None = None
     active: bool = True
+    pills_left: int | None = None  # optional stock; lowered when a dose is marked taken
+    pills_per_dose: int = 1
 
 
 class ScheduleTime(SQLModel, table=True):

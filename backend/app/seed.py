@@ -53,6 +53,10 @@ MEDICINES = [
 ]
 
 
+# Tablets left (None = not tracked). Metformin and Montelukast are nearly out -> refill alerts.
+STOCK = {"Metformin": 7, "Montelukast": 4, "Levothyroxine": 45, "Vitamin D3": 30}
+
+
 def auth_user_id(client: httpx.Client, email: str) -> str:
     r = client.post(
         "/admin/users", json={"email": email, "password": PASSWORD, "email_confirm": True}
@@ -142,6 +146,7 @@ def main() -> None:
                 strength=strength,
                 instructions=instructions,
                 start_date=start,
+                pills_left=STOCK.get(name),
             )
             s.add(med)
             s.flush()

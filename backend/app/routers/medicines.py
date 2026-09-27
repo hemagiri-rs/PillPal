@@ -58,7 +58,18 @@ def _out(
 ) -> MedicineOut:
     if times is None:
         times = times_for(session, med.id)
-    return MedicineOut(**med.model_dump(), times=times, warnings=warnings or [])
+    return MedicineOut(
+        **med.model_dump(),
+        times=times,
+        days_left=days_left(med, len(times)),
+        warnings=warnings or [],
+    )
+
+
+def days_left(med: Medicine, doses_per_day: int) -> int | None:
+    if med.pills_left is None or doses_per_day == 0:
+        return None
+    return med.pills_left // (med.pills_per_dose * doses_per_day)
 
 
 def check_rules(

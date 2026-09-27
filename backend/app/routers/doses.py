@@ -102,15 +102,27 @@ def mark_dose(body: DoseMarkIn, user: UserDep, session: SessionDep, now: NowDep)
             "You can mark it up to 1 hour early."
         )
 
+    was_taken = existing is not None and existing.status == DoseStatus.taken
     if body.status == "pending":
         if existing:
             session.delete(existing)
             session.commit()
     else:
         _upsert(session, existing, med.id, body.date, t, DoseStatus(body.status), user)
+    _adjust_stock(session, med, was_taken, body.status == "taken")
 
     items = build_schedule(session, [profile], body.date, body.date, local_now)
     return next(i for i in items if i.medicine_id == med.id and i.time == t)
+
+
+def _adjust_stock(session: Session, med: Medicine, was_taken: bool, now_taken: bool) -> None:
+    """Keep the optional tablet count in step: taking a dose uses it, undoing gives it back."""
+    if med.pills_left is None or was_taken == now_taken:
+        return
+    change = -med.pills_per_dose if now_taken else med.pills_per_dose
+    med.pills_left = max(0, med.pills_left + change)
+    session.add(med)
+    session.commit()
 
 
 def _upsert(session, existing, medicine_id, day, t, new_status, user) -> None:
