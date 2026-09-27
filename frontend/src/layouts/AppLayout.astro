@@ -1,0 +1,88 @@
+---
+import "@fontsource/atkinson-hyperlegible/400.css";
+import "@fontsource/atkinson-hyperlegible/700.css";
+import "@fontsource/lora/600.css";
+import "../styles/global.css";
+import NavBar from "../components/NavBar";
+
+interface Props {
+  title: string;
+  /** Pages behind login show the navigation; the login page does not. */
+  nav?: "today" | "medicines" | "progress" | "family" | false;
+}
+const { title, nav = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#24532f" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} · PillPal</title>
+    <script is:inline>
+      // Apply saved text size before first paint (avoids a jump for low-vision users)
+      try {
+        const size = localStorage.getItem("pillpal:text-size");
+        if (size) document.documentElement.dataset.textSize = size;
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    {nav !== false && <NavBar client:load active={nav} />}
+    <main id="main" class={nav !== false ? "app-main" : "plain-main"}>
+      <slot />
+    </main>
+    <footer class="disclaimer">
+      PillPal is for reminders only. It is not medical advice. Always follow your doctor's or
+      pharmacist's instructions.
+    </footer>
+  </body>
+</html>
+
+<style>
+  .skip-link {
+    position: absolute;
+    left: -999px;
+    top: 0.5rem;
+    background: var(--primary);
+    color: #fff;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    z-index: 10;
+  }
+  .skip-link:focus {
+    left: 0.5rem;
+  }
+  main {
+    max-width: var(--content);
+    margin: 0 auto;
+    padding: var(--space-4) var(--space-3);
+    padding-left: max(var(--space-3), env(safe-area-inset-left));
+    padding-right: max(var(--space-3), env(safe-area-inset-right));
+  }
+  /* room for the bottom tab bar on phones */
+  .app-main {
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+  }
+  @media (min-width: 60rem) {
+    .app-main {
+      padding-bottom: var(--space-5);
+    }
+  }
+  .disclaimer {
+    max-width: var(--content);
+    margin: 0 auto calc(6.5rem + env(safe-area-inset-bottom));
+    padding: 0 var(--space-3) var(--space-4);
+    color: var(--text-muted);
+    font-size: var(--fs-sm);
+    text-align: center;
+  }
+  @media (min-width: 60rem) {
+    .disclaimer {
+      margin-bottom: var(--space-4);
+    }
+  }
+</style>

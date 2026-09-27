@@ -1,0 +1,346 @@
+/* PillPal design tokens + base styles.
+   Organic / biophilic mood, but senior-friendly rules win (spec §10a):
+   20px body, >=7:1 body contrast, >=56px targets, visible labels, no colour-only status. */
+
+:root {
+  /* Surfaces: warm paper + sage */
+  --bg: #f6f4ec;
+  --surface: #ffffff;
+  --surface-sage: #eef2e6;
+  --border: #c9d3c2;
+
+  /* Text (checked: 13.5:1 and 8.5:1 on --bg) */
+  --text: #1f2a24;
+  --text-muted: #3b4a40;
+
+  /* Leaf green brand (white on --primary = 8.9:1) */
+  --primary: #24532f;
+  --primary-hover: #1e4a2a;
+  --primary-soft: #dbe7d4;
+  --focus: #1f5fbf;
+
+  /* Dose status (Okabe-Ito). Solid = icon badges, borders, chart bars. Tint = card background. */
+  --taken: #0072b2;
+  --taken-tint: #dbebf4;
+  --skipped: #e69f00;
+  --skipped-tint: #fcf2db;
+  --pending: #56b4e9;
+  --pending-tint: #e7f4fc;
+  --missed: #d55e00;
+  --missed-tint: #f9e8db;
+
+  --danger: #a4262c;
+  --danger-tint: #fbe9ea;
+  --warning-tint: #fff4d6;
+
+  /* Type: rem-based so OS / in-app text size scales everything */
+  --font-body: "Atkinson Hyperlegible", system-ui, sans-serif;
+  --font-heading: "Lora", Georgia, serif;
+  --fs-sm: 1rem; /* 16px floor, never smaller */
+  --fs-body: 1.25rem; /* 20px */
+  --fs-lg: 1.5rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: 2rem;
+
+  --radius: 1.25rem;
+  --radius-pill: 999px;
+  --space-1: 0.5rem;
+  --space-2: 0.75rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2rem;
+  --tap: 3.5rem; /* 56px minimum touch target */
+  --shadow: 0 1px 2px rgb(31 42 36 / 8%), 0 4px 16px rgb(31 42 36 / 6%);
+  --content: 46rem;
+}
+
+/* In-app text size control (Profile page) */
+html[data-text-size="large"] {
+  font-size: 112.5%;
+}
+html[data-text-size="xlarge"] {
+  font-size: 125%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0 0 var(--space-3);
+}
+h1 {
+  font-size: var(--fs-2xl);
+}
+h2 {
+  font-size: var(--fs-xl);
+}
+h3 {
+  font-size: var(--fs-lg);
+}
+p {
+  margin: 0 0 var(--space-3);
+}
+
+a {
+  color: var(--primary);
+  text-underline-offset: 0.2em;
+}
+
+:focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: var(--tap);
+  padding: 0 var(--space-4);
+  border: 2px solid transparent;
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+.btn-secondary {
+  background: var(--surface);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--primary-soft);
+}
+.btn-danger {
+  background: var(--surface);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+.btn-block {
+  width: 100%;
+}
+.btn svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+}
+
+/* ---------- Forms ---------- */
+.field {
+  display: grid;
+  gap: 0.375rem;
+  margin-bottom: var(--space-4);
+}
+.field label,
+.field legend {
+  font-weight: 700;
+}
+.hint {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+input,
+select,
+textarea {
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--text-muted);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+textarea {
+  min-height: 6rem;
+}
+input[aria-invalid="true"],
+select[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+.field-error {
+  color: var(--danger);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+}
+
+/* ---------- Cards & notices ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  box-shadow: var(--shadow);
+}
+.notice {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  border: 2px solid;
+  margin-bottom: var(--space-4);
+}
+.notice svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: none;
+}
+.notice-error {
+  background: var(--danger-tint);
+  border-color: var(--danger);
+}
+.notice-warning {
+  background: var(--warning-tint);
+  border-color: var(--skipped);
+}
+.notice-info {
+  background: var(--surface-sage);
+  border-color: var(--primary);
+}
+
+.stack > * + * {
+  margin-top: var(--space-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: must beat component styles for reduced motion */
+    transition: none !important;
+    /* biome-ignore lint/complexity/noImportantStyles: must beat component styles for reduced motion */
+    animation: none !important;
+  }
+}
+
+/* ---------- Top bar + tabs (bottom tab bar on phones) ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  padding-top: max(var(--space-2), env(safe-area-inset-top));
+  background: var(--surface-sage);
+  border-bottom: 1px solid var(--border);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--tap);
+  color: var(--primary);
+  font-family: var(--font-heading);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  text-decoration: none;
+}
+.brand svg {
+  width: 2rem;
+  height: 2rem;
+}
+.family-name {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  margin-right: auto;
+}
+.tabs {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 0;
+  padding: 0 0 env(safe-area-inset-bottom);
+  list-style: none;
+  background: var(--surface);
+  border-top: 2px solid var(--border);
+}
+.tabs a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  min-height: 4.5rem;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-decoration: none;
+}
+.tabs svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+.tabs a[aria-current="page"] {
+  color: var(--primary);
+  background: var(--primary-soft);
+  box-shadow: inset 0 4px 0 var(--primary);
+}
+@media (min-width: 60rem) {
+  .tabs {
+    position: static;
+    display: flex;
+    gap: var(--space-1);
+    padding: 0;
+    background: none;
+    border: 0;
+  }
+  .tabs a {
+    flex-direction: row;
+    min-height: var(--tap);
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-pill);
+    font-size: var(--fs-body);
+  }
+  .tabs a[aria-current="page"] {
+    box-shadow: none;
+  }
+}

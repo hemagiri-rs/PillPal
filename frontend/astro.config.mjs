@@ -1,5 +1,10 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import preact from "@astrojs/preact";
+import { defineConfig } from "astro/config";
 
-// https://astro.build/config
-export default defineConfig({});
+// Static output only: the same build is served on the web and wrapped by Capacitor later.
+export default defineConfig({
+  output: "static",
+  integrations: [preact()],
+  server: { port: 4321 },
+});

@@ -1,0 +1,41 @@
+---
+import LoginForm from "../components/LoginForm";
+import AppLayout from "../layouts/AppLayout.astro";
+---
+
+<AppLayout title="Sign in">
+  <div class="login">
+    <svg class="leaves" viewBox="0 0 200 120" aria-hidden="true">
+      <path
+        d="M100 115C98 80 70 55 30 50c10 35 38 58 70 65zM100 115c2-40 30-70 72-78-6 40-36 70-72 78zM100 115V20"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="3"
+        stroke-linecap="round"></path>
+    </svg>
+    <h1>Welcome to PillPal</h1>
+    <p class="lead">Medicine reminders for the whole family.</p>
+    <div class="card">
+      <LoginForm client:load />
+    </div>
+  </div>
+</AppLayout>
+
+<style>
+  .login {
+    max-width: 28rem;
+    margin: var(--space-5) auto 0;
+    text-align: center;
+  }
+  .login .card {
+    text-align: left;
+  }
+  .leaves {
+    width: 9rem;
+    color: var(--primary);
+  }
+  .lead {
+    color: var(--text-muted);
+    font-size: var(--fs-lg);
+  }
+</style>
