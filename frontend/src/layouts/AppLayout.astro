@@ -22,23 +22,35 @@ const { title, nav = false } = Astro.props;
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title} · PillPal</title>
     <script is:inline>
-      // Apply saved text size before first paint (avoids a jump for low-vision users)
+      // Before first paint: saved text size, language and direction (avoids a jump / flash)
       try {
         const size = localStorage.getItem("pillpal:text-size");
         if (size) document.documentElement.dataset.textSize = size;
+        const lang = localStorage.getItem("pillpal:lang");
+        if (lang) document.documentElement.lang = lang;
+        document.documentElement.dir = localStorage.getItem("pillpal:dir") || "ltr";
       } catch {}
     </script>
   </head>
   <body>
-    <a class="skip-link" href="#main">Skip to main content</a>
+    <a class="skip-link" href="#main" data-i18n>Skip to main content</a>
     {nav !== false && <NavBar client:load active={nav} />}
     <main id="main" class={nav !== false ? "app-main" : "plain-main"}>
       <slot />
     </main>
     <footer class="disclaimer">
-      PillPal is for reminders only. It is not medical advice. Always follow your doctor's or
-      pharmacist's instructions.
+      <span data-i18n
+        >PillPal is for reminders only. It is not medical advice. Always follow your doctor's or
+        pharmacist's instructions.</span
+      >
     </footer>
+    <script>
+      import { hasChosenLang, translateStatic } from "../lib/i18n";
+
+      // First visit: choose a language before anything else.
+      if (!hasChosenLang() && location.pathname !== "/language") location.href = "/language";
+      translateStatic();
+    </script>
   </body>
 </html>
 

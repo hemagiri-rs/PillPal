@@ -1,0 +1,8 @@
+---
+import WelcomeView from "../components/WelcomeView";
+import AppLayout from "../layouts/AppLayout.astro";
+---
+
+<AppLayout title="Welcome">
+  <WelcomeView client:only="preact" />
+</AppLayout>

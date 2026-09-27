@@ -1,0 +1,10 @@
+---
+import LanguagePicker from "../components/LanguagePicker";
+import AppLayout from "../layouts/AppLayout.astro";
+---
+
+<AppLayout title="Language">
+  <h1>Choose your language</h1>
+  <p class="lead">अपनी भाषा चुनें · உங்கள் மொழியைத் தேர்ந்தெடுக்கவும் · আপনার ভাষা বেছে নিন</p>
+  <LanguagePicker client:only="preact" />
+</AppLayout>

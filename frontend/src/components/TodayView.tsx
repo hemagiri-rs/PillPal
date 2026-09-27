@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "preact/hooks";
 import { type ApiError, api, type Dose, type Profile, post, type Schedule } from "../lib/api";
 import { addDays, firstName, fmtDay, fmtLongDate, fmtTime } from "../lib/format";
-import { enableReminders, reminderState } from "../lib/notifications";
+import { useT } from "../lib/i18n";
 import { useMe } from "../lib/session";
 import { DoseCard, minutes } from "./DoseCard";
 import { Icon } from "./Icon";
@@ -14,31 +14,41 @@ interface Toast {
   dose: Dose;
 }
 
+/**
+ * Home. Member: their own day with one big "Next medicine" card.
+ * Caregiver: one card per person; tapping opens that person's day (?person=id).
+ */
 export default function TodayView() {
+  const t = useT();
   const { me, error: meError } = useMe();
+  const [person, setPerson] = useState<number | null>(
+    Number(new URLSearchParams(location.search).get("person")) || null,
+  );
   const [day, setDay] = useState<string | null>(null); // null = family's today
   const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [person, setPerson] = useState<number | null>(null);
   const [schedule, setSchedule] = useState<Schedule | null>(null);
   const [today, setToday] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
   const toastTimer = useRef<number>();
-  const [reminders, setReminders] = useState(reminderState());
+
+  const caregiver = me?.role === "caregiver";
+  const personId = caregiver ? person : (me?.profile_id ?? null);
 
   const load = useCallback(async () => {
     const q = new URLSearchParams();
     if (day) q.set("date", day);
+    if (personId) q.set("profile_id", String(personId));
     try {
       const s = await api<Schedule>(`/schedule?${q}`);
       setSchedule(s);
       if (!day) setToday(s.date);
       setError(null);
     } catch (e) {
-      setError((e as ApiError).message);
+      setError(t((e as ApiError).message));
     }
-  }, [day]);
+  }, [day, personId]);
 
   useEffect(() => {
     if (!me) return;
@@ -48,8 +58,15 @@ export default function TodayView() {
   }, [me, load]);
 
   useEffect(() => {
-    if (me?.role === "caregiver") api<Profile[]>("/profiles").then(setProfiles, () => {});
-  }, [me]);
+    if (caregiver) api<Profile[]>("/profiles").then(setProfiles, () => {});
+  }, [caregiver]);
+
+  function openPerson(id: number | null) {
+    setPerson(id);
+    setDay(null);
+    history.pushState(null, "", id ? `/today?person=${id}` : "/today");
+    window.scrollTo({ top: 0 });
+  }
 
   async function mark(dose: Dose, status: "taken" | "skipped" | "pending") {
     setBusy(true);
@@ -65,184 +82,219 @@ export default function TodayView() {
       if (status === "pending") {
         setToast(null);
       } else {
-        const who = me?.role === "caregiver" ? ` for ${firstName(dose.profile_name)}` : "";
         setToast({
-          text: `${dose.medicine_name} marked as ${status}${who}.`,
+          text:
+            status === "taken"
+              ? t("Done! {medicine} marked as taken.", { medicine: dose.medicine_name })
+              : t("{medicine} marked as not taken.", { medicine: dose.medicine_name }),
           dose,
         });
         toastTimer.current = window.setTimeout(() => setToast(null), UNDO_MS);
       }
     } catch (e) {
-      setError((e as ApiError).message);
+      setError(t((e as ApiError).message));
     } finally {
       setBusy(false);
     }
   }
 
-  if (meError) return <ErrorNotice text={meError} />;
-  if (!me || !schedule || !today) return <p aria-live="polite">Loading your medicines…</p>;
+  if (meError) return <ErrorNotice text={t(meError)} />;
+  if (!me || !schedule || !today) return <p aria-live="polite">{t("Loading your medicines…")}</p>;
 
-  const shown = schedule.doses.filter((d) => person === null || d.profile_id === person);
   const nowMinutes = minutes(schedule.now.slice(11, 16));
   const isToday = schedule.date === today;
-  const due = isToday ? shown.filter((d) => d.due) : [];
-  const counted = shown.filter((d) => d.status !== "pending");
-  const takenCount = shown.filter((d) => d.status === "taken").length;
-  const groups = groupByTime(shown);
-  const caregiver = me.role === "caregiver";
+  const toastEl = (
+    <div class="toast-region" aria-live="polite">
+      {toast && (
+        <div class="toast">
+          <Icon name="check" />
+          <span>{toast.text}</span>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onClick={() => mark(toast.dose, "pending")}
+          >
+            <Icon name="undo" />
+            {t("Undo")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  // ---------- Caregiver overview: one card per person ----------
+  if (caregiver && !person) {
+    return (
+      <div>
+        <h1>{t("Today")}</h1>
+        <p class="lead">{fmtLongDate(schedule.date)}</p>
+        {error && <ErrorNotice text={error} />}
+        {profiles.length === 0 && (
+          <div class="empty card">
+            <Icon name="users" />
+            <p>{t("Add the people in your family to start.")}</p>
+            <a class="btn btn-primary" href="/family">
+              {t("Go to Family")}
+            </a>
+          </div>
+        )}
+        <div class="stack">
+          {profiles.map((p) => {
+            const mine = schedule.doses.filter((d) => d.profile_id === p.id);
+            const due = mine.filter((d) => d.due);
+            const next = mine.find((d) => d.status === "pending");
+            const taken = mine.filter((d) => d.status === "taken").length;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                class={`person-card${due.length ? " person-due" : ""}`}
+                onClick={() => openPerson(p.id)}
+              >
+                <span class="person-name">{p.name}</span>
+                <span class="person-status">
+                  {mine.length === 0
+                    ? t("No medicines today")
+                    : due.length
+                      ? t("{count} medicine(s) due now", { count: due.length })
+                      : next
+                        ? t("Next: {medicine} at {time}", {
+                            medicine: next.medicine_name,
+                            time: fmtTime(next.time),
+                          })
+                        : t("All done for today")}
+                </span>
+                {mine.length > 0 && (
+                  <span class="hint">
+                    {t("{taken} of {total} taken", { taken, total: mine.length })}
+                  </span>
+                )}
+                <Icon name="chevronRight" class="person-go" />
+              </button>
+            );
+          })}
+        </div>
+        {toastEl}
+      </div>
+    );
+  }
+
+  // ---------- One person's day ----------
+  const doses = schedule.doses;
+  const hero = isToday
+    ? (doses.find((d) => d.due) ?? doses.find((d) => d.status === "pending"))
+    : undefined;
+  const rest = doses.filter((d) => d !== hero);
+  const allDone = isToday && doses.length > 0 && !doses.some((d) => d.status === "pending");
+  const who = caregiver ? profiles.find((p) => p.id === person)?.name : null;
 
   return (
     <div>
-      <div class="day-head">
-        <h1>{fmtDay(schedule.date, today)}</h1>
-        <p class="hint day-date">{fmtLongDate(schedule.date)}</p>
-      </div>
-      <nav class="day-nav" aria-label="Choose day">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          onClick={() => setDay(addDays(schedule.date, -1))}
-        >
+      {caregiver && (
+        <button type="button" class="btn btn-secondary back-btn" onClick={() => openPerson(null)}>
           <Icon name="chevronLeft" />
-          Previous day
+          {t("Everyone")}
         </button>
-        {!isToday && (
-          <button type="button" class="btn btn-secondary" onClick={() => setDay(null)}>
-            Back to today
-          </button>
-        )}
-        <button
-          type="button"
-          class="btn btn-secondary"
-          onClick={() => setDay(addDays(schedule.date, 1))}
-        >
-          Next day
-          <Icon name="chevronRight" />
-        </button>
-      </nav>
-
+      )}
+      <h1>
+        {who
+          ? t("{name}'s medicines", { name: firstName(who) })
+          : isToday
+            ? t("Your medicines today")
+            : t("Your medicines")}
+      </h1>
+      <p class="lead">
+        {fmtDay(schedule.date, today)} · {fmtLongDate(schedule.date)}
+      </p>
       {error && <ErrorNotice text={error} />}
 
-      {isToday && reminders === "off" && (
-        <div class="notice notice-info">
-          <Icon name="bell" />
-          <div>
-            <p>Get a notification when it's time for a medicine.</p>
-            <button
-              type="button"
-              class="btn btn-primary"
-              onClick={async () => setReminders(await enableReminders())}
-            >
-              Turn on reminders
-            </button>
-          </div>
+      {hero && (
+        <section aria-labelledby="next-title" class="hero">
+          <h2 id="next-title">{hero.due ? t("Take this now") : t("Your next medicine")}</h2>
+          <DoseCard
+            dose={hero}
+            today={today}
+            timeZone={schedule.timezone}
+            nowMinutes={nowMinutes}
+            showPerson={false}
+            busy={busy}
+            big
+            onMark={mark}
+          />
+        </section>
+      )}
+
+      {allDone && (
+        <div class="all-done" role="status">
+          <Icon name="check" class="icon-lg icon-taken" />
+          <p>{t("All done for today. Well done!")}</p>
         </div>
       )}
 
-      {due.length > 0 && (
-        <div class="due-banner" role="status">
-          <Icon name="bell" />
-          <div>
-            <strong>
-              Time for {due.length === 1 ? "1 medicine" : `${due.length} medicines`} now
-            </strong>
-            <p>
-              {due
-                .map((d) =>
-                  caregiver
-                    ? `${firstName(d.profile_name)}: ${d.medicine_name}`
-                    : `${d.medicine_name} ${d.strength}`,
-                )
-                .join(" · ")}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {caregiver && profiles.length > 1 && (
-        <fieldset class="person-filter">
-          <legend>Show medicines for</legend>
-          {[{ id: null, name: "Everyone" }, ...profiles].map((p) => (
-            <button
-              key={p.id ?? "all"}
-              type="button"
-              class="chip"
-              aria-pressed={person === p.id}
-              onClick={() => setPerson(p.id)}
-            >
-              {p.id === null ? p.name : firstName(p.name)}
-            </button>
-          ))}
-        </fieldset>
-      )}
-
-      {shown.length === 0 ? (
+      {doses.length === 0 && (
         <div class="empty card">
           <Icon name="leaf" />
-          <p>No medicines on this day.</p>
-          {caregiver && (
-            <a class="btn btn-primary" href="/medicine">
+          <p>{t("No medicines on this day.")}</p>
+          {caregiver && person && (
+            <a class="btn btn-primary" href={`/medicine?profile=${person}`}>
               <Icon name="plus" />
-              Add a medicine
+              {t("Add a medicine")}
             </a>
           )}
         </div>
-      ) : (
-        <>
-          {counted.length > 0 && (
-            <p class="progress-line">
-              <strong>{takenCount}</strong> of <strong>{counted.length}</strong> due doses taken
-              {isToday ? " so far today" : ""}.
-            </p>
-          )}
-          {groups.map(([time, doses]) => (
-            <section key={time} class="time-group" aria-labelledby={`t-${time}`}>
-              <h2 id={`t-${time}`} class="time-heading">
-                {fmtTime(time)}
-              </h2>
-              <div class="stack">
-                {doses.map((d) => (
-                  <DoseCard
-                    key={`${d.medicine_id}-${d.time}`}
-                    dose={d}
-                    today={today}
-                    timeZone={schedule.timezone}
-                    nowMinutes={nowMinutes}
-                    showPerson={caregiver}
-                    busy={busy}
-                    onMark={mark}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
-        </>
       )}
 
-      <div class="toast-region" aria-live="polite">
-        {toast && (
-          <div class="toast">
-            <Icon name="check" />
-            <span>{toast.text}</span>
-            <button
-              type="button"
-              class="btn btn-secondary"
-              onClick={() => mark(toast.dose, "pending")}
-            >
-              <Icon name="undo" />
-              Undo
-            </button>
+      {rest.length > 0 && (
+        <section aria-labelledby="rest-title">
+          <h2 id="rest-title" class="section-title">
+            {isToday ? t("The rest of today") : t("Medicines on this day")}
+          </h2>
+          <div class="stack">
+            {rest.map((d) => (
+              <DoseCard
+                key={`${d.medicine_id}-${d.time}`}
+                dose={d}
+                today={today}
+                timeZone={schedule.timezone}
+                nowMinutes={nowMinutes}
+                showPerson={false}
+                busy={busy}
+                onMark={mark}
+              />
+            ))}
           </div>
-        )}
-      </div>
+        </section>
+      )}
+
+      <nav class="day-nav" aria-label={t("Other days")}>
+        <h2 class="section-title">{t("Other days")}</h2>
+        <div class="day-nav-row">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onClick={() => setDay(addDays(schedule.date, -1))}
+          >
+            <Icon name="chevronLeft" />
+            {t("Day before")}
+          </button>
+          {!isToday && (
+            <button type="button" class="btn btn-primary" onClick={() => setDay(null)}>
+              {t("Back to today")}
+            </button>
+          )}
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onClick={() => setDay(addDays(schedule.date, 1))}
+          >
+            {t("Day after")}
+            <Icon name="chevronRight" />
+          </button>
+        </div>
+      </nav>
+      {toastEl}
     </div>
   );
-}
-
-function groupByTime(doses: Dose[]): [string, Dose[]][] {
-  const map = new Map<string, Dose[]>();
-  for (const d of doses) map.set(d.time, [...(map.get(d.time) ?? []), d]);
-  return [...map.entries()];
 }
 
 function ErrorNotice({ text }: { text: string }) {

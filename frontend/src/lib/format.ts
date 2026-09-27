@@ -1,9 +1,18 @@
-// Friendly formats for older users: "8:00 PM", "Today", "Mon 28 Sep".
+// Friendly, localised formats for older users: "8:00 PM", "Today", "Mon 28 Sep".
+import { getLang, t } from "./i18n";
 
-/** "20:00:00" | "20:00" -> "8:00 PM" */
+function locale(): string {
+  const code = typeof window === "undefined" ? "en" : getLang().code;
+  return code === "en" ? "en-IN" : `${code}-IN`;
+}
+
+/** "20:00:00" | "20:00" -> "8:00 pm" in the chosen language */
 export function fmtTime(hhmm: string): string {
   const [h, m] = hhmm.split(":").map(Number);
-  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
+  return new Date(2000, 0, 1, h, m).toLocaleTimeString(locale(), {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 /** Parse "YYYY-MM-DD" as a local calendar date (no timezone shift). */
@@ -22,23 +31,36 @@ export function addDays(iso: string, days: number): string {
   return isoDate(d);
 }
 
-/** Relative to `today` (the family's date from the API): "Today", "Yesterday", "Tomorrow", "Mon 28 Sep" */
+/** Relative to `today` (the family's date from the API): "Today", "Yesterday", "Mon 28 Sep" */
 export function fmtDay(iso: string, today: string): string {
-  if (iso === today) return "Today";
-  if (iso === addDays(today, -1)) return "Yesterday";
-  if (iso === addDays(today, 1)) return "Tomorrow";
-  return parseDate(iso).toLocaleDateString("en-GB", {
+  if (iso === today) return t("Today");
+  if (iso === addDays(today, -1)) return t("Yesterday");
+  if (iso === addDays(today, 1)) return t("Tomorrow");
+  return parseDate(iso).toLocaleDateString(locale(), {
     weekday: "short",
     day: "numeric",
     month: "short",
   });
 }
 
+export function fmtWeekday(iso: string): string {
+  return parseDate(iso).toLocaleDateString(locale(), { weekday: "short" });
+}
+
 export function fmtLongDate(iso: string): string {
-  return parseDate(iso).toLocaleDateString("en-GB", {
+  return parseDate(iso).toLocaleDateString(locale(), {
     weekday: "long",
     day: "numeric",
     month: "long",
+  });
+}
+
+/** Clock time of an ISO timestamp in a given IANA timezone (the family's, not the browser's). */
+export function fmtClock(iso: string, timeZone: string): string {
+  return new Date(iso).toLocaleTimeString(locale(), {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone,
   });
 }
 

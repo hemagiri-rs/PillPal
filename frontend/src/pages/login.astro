@@ -13,10 +13,10 @@ import AppLayout from "../layouts/AppLayout.astro";
         stroke-width="3"
         stroke-linecap="round"></path>
     </svg>
-    <h1>Welcome to PillPal</h1>
-    <p class="lead">Medicine reminders for the whole family.</p>
+    <h1 data-i18n>Welcome to PillPal</h1>
+    <p class="lead" data-i18n>Medicine reminders for the whole family.</p>
     <div class="card">
-      <LoginForm client:load />
+      <LoginForm client:only="preact" />
     </div>
   </div>
 </AppLayout>

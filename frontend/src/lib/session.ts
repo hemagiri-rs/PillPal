@@ -4,7 +4,10 @@ import { supabase } from "./supabase";
 
 let mePromise: Promise<Me> | null = null;
 
-/** The signed-in user; redirects to /login when there is no session. Cached per page load. */
+/**
+ * The signed-in user. No session -> /login. Signed in but not in a family yet (403) -> /welcome.
+ * Cached per page load.
+ */
 export function loadMe(): Promise<Me> {
   mePromise ??= (async () => {
     const { data } = await supabase.auth.getSession();
@@ -12,7 +15,14 @@ export function loadMe(): Promise<Me> {
       location.href = "/login";
       throw new ApiError("Please sign in.", 401);
     }
-    return api<Me>("/me");
+    try {
+      return await api<Me>("/me");
+    } catch (e) {
+      if ((e as ApiError).status === 403 && location.pathname !== "/welcome") {
+        location.href = "/welcome";
+      }
+      throw e;
+    }
   })();
   return mePromise;
 }
@@ -23,7 +33,7 @@ export function useMe(): { me: Me | null; error: string | null } {
   useEffect(() => {
     loadMe()
       .then(setMe)
-      .catch((e: ApiError) => e.status !== 401 && setError(e.message));
+      .catch((e: ApiError) => e.status !== 401 && e.status !== 403 && setError(e.message));
   }, []);
   return { me, error };
 }

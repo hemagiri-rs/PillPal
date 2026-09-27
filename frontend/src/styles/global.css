@@ -36,11 +36,11 @@
   /* Type: rem-based so OS / in-app text size scales everything */
   --font-body: "Atkinson Hyperlegible", system-ui, sans-serif;
   --font-heading: "Lora", Georgia, serif;
-  --fs-sm: 1rem; /* 16px floor, never smaller */
-  --fs-body: 1.25rem; /* 20px */
-  --fs-lg: 1.5rem;
-  --fs-xl: 1.75rem;
-  --fs-2xl: 2rem;
+  --fs-sm: 1.125rem; /* 18px floor, never smaller */
+  --fs-body: 1.375rem; /* 22px */
+  --fs-lg: 1.625rem;
+  --fs-xl: 2rem;
+  --fs-2xl: 2.375rem;
 
   --radius: 1.25rem;
   --radius-pill: 999px;
@@ -49,9 +49,9 @@
   --space-3: 1rem;
   --space-4: 1.5rem;
   --space-5: 2rem;
-  --tap: 3.5rem; /* 56px minimum touch target */
+  --tap: 4rem; /* 64px minimum touch target */
   --shadow: 0 1px 2px rgb(31 42 36 / 8%), 0 4px 16px rgb(31 42 36 / 6%);
-  --content: 46rem;
+  --content: 40rem; /* one comfortable column */
 }
 
 /* In-app text size control (Profile page) */
@@ -78,7 +78,7 @@ body {
   color: var(--text);
   font-family: var(--font-body);
   font-size: var(--fs-body);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 h1,
@@ -428,24 +428,24 @@ select[aria-invalid="true"] {
   padding: var(--space-4);
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  border-left: 0.5rem solid;
+  border-inline-start: 0.5rem solid;
   box-shadow: var(--shadow);
 }
 .dose-taken {
   background: var(--taken-tint);
-  border-left-color: var(--taken);
+  border-inline-start-color: var(--taken);
 }
 .dose-skipped {
   background: var(--skipped-tint);
-  border-left-color: var(--skipped);
+  border-inline-start-color: var(--skipped);
 }
 .dose-pending {
   background: var(--pending-tint);
-  border-left-color: var(--pending);
+  border-inline-start-color: var(--pending);
 }
 .dose-missed {
   background: var(--missed-tint);
-  border-left-color: var(--missed);
+  border-inline-start-color: var(--missed);
 }
 .dose-head {
   display: flex;
@@ -912,4 +912,219 @@ fieldset.pick-row {
   height: 100%;
   background: var(--taken);
   border-radius: var(--radius-pill);
+}
+
+/* ---------- Senior redesign additions ---------- */
+.btn-huge {
+  min-height: 5rem;
+  font-size: var(--fs-xl);
+  border-radius: 1.5rem;
+}
+.speak-btn {
+  min-height: var(--tap);
+  min-width: var(--tap);
+  padding: 0 var(--space-3);
+}
+.lead {
+  color: var(--text-muted);
+  font-size: var(--fs-lg);
+}
+.original {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+  font-style: italic;
+  margin-top: -0.25rem;
+}
+.lang-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.lang-btn {
+  display: grid;
+  gap: 0.125rem;
+  min-height: 5rem;
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+.lang-btn[aria-pressed="true"] {
+  background: var(--primary);
+  color: #fff;
+}
+.lang-native {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+.lang-en {
+  font-size: var(--fs-sm);
+}
+ul.lang-grid {
+  padding: 0;
+  list-style: none;
+}
+.lang-btn {
+  width: 100%;
+}
+.mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+  padding: 0.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sage);
+}
+.mode-tab {
+  min-height: var(--tap);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.mode-tab[aria-selected="true"] {
+  background: var(--primary);
+  color: #fff;
+}
+.lang-link {
+  margin: var(--space-4) 0 0;
+  text-align: center;
+}
+.icon-lg {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  color: var(--primary);
+}
+.icon-taken {
+  color: var(--taken);
+}
+.invite-text {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+.start-card {
+  margin-top: var(--space-5);
+  background: var(--surface-sage);
+}
+.center {
+  text-align: center;
+  margin-top: var(--space-4);
+}
+.link-btn {
+  min-height: var(--tap);
+  padding: 0 var(--space-1);
+  border: 0;
+  background: none;
+  color: var(--primary);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+/* Home */
+.person-card {
+  position: relative;
+  display: grid;
+  gap: 0.25rem;
+  width: 100%;
+  padding: var(--space-4);
+  padding-inline-end: 4rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.person-card:hover {
+  border-color: var(--primary);
+}
+.person-due {
+  border: 3px solid var(--primary);
+  background: var(--primary-soft);
+}
+.person-name {
+  font-family: var(--font-heading);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+}
+.person-status {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+.person-go {
+  position: absolute;
+  inset-inline-end: var(--space-3);
+  top: 50%;
+  width: 2.25rem;
+  height: 2.25rem;
+  transform: translateY(-50%);
+  color: var(--primary);
+}
+[dir="rtl"] .person-go,
+[dir="rtl"] .btn svg[class*="chevron"] {
+  transform: translateY(-50%) scaleX(-1);
+}
+.back-btn {
+  margin-bottom: var(--space-3);
+}
+.hero {
+  margin-bottom: var(--space-5);
+}
+.dose-big {
+  border-inline-start-width: 0.75rem;
+  padding: var(--space-5) var(--space-4);
+}
+.dose-big .dose-name {
+  font-size: var(--fs-2xl);
+}
+.dose-big .dose-instructions {
+  font-size: var(--fs-lg);
+}
+.dose-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+.dose-foot .btn {
+  flex: 1 1 10rem;
+}
+.all-done {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius);
+  background: var(--taken-tint);
+  border: 3px solid var(--taken);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+.all-done p {
+  margin: 0;
+}
+.day-nav {
+  margin-top: var(--space-5);
+}
+.day-nav-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.day-nav-row .btn {
+  flex: 1 1 10rem;
 }
