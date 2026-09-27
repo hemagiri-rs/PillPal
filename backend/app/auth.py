@@ -1,6 +1,7 @@
 """Supabase Auth JWT verification and role/ownership guards."""
 
 import uuid
+from dataclasses import dataclass
 from functools import lru_cache
 from typing import Annotated
 
@@ -28,20 +29,33 @@ def decode_token(token: str) -> dict:
     return jwt.decode(token, key, algorithms=["ES256", "RS256"], audience="authenticated")
 
 
-def current_user(
-    session: SessionDep,
+@dataclass(frozen=True)
+class Identity:
+    """Who the Supabase login is, whether or not they have joined a family yet."""
+
+    id: uuid.UUID
+    email: str
+
+
+def current_identity(
     creds: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer)],
-) -> AppUser:
+) -> Identity:
     if creds is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Please sign in.")
     try:
         claims = decode_token(creds.credentials)
-        user_id = uuid.UUID(claims["sub"])
+        return Identity(id=uuid.UUID(claims["sub"]), email=claims.get("email", "").lower())
     except (jwt.PyJWTError, KeyError, ValueError) as exc:
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED, "Your session has expired. Please sign in again."
         ) from exc
-    user = session.get(AppUser, user_id)
+
+
+IdentityDep = Annotated[Identity, Depends(current_identity)]
+
+
+def current_user(session: SessionDep, identity: IdentityDep) -> AppUser:
+    user = session.get(AppUser, identity.id)
     if user is None:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "This account is not set up in PillPal.")
     return user

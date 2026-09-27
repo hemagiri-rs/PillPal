@@ -76,3 +76,22 @@ class DoseLog(SQLModel, table=True):
     status: DoseStatus
     marked_at: datetime = Field(default_factory=utcnow, sa_type=DateTime(timezone=True))
     marked_by: uuid.UUID
+
+
+class InviteStatus(StrEnum):
+    pending = "pending"
+    accepted = "accepted"
+    declined = "declined"
+
+
+class Invitation(SQLModel, table=True):
+    __table_args__ = (UniqueConstraint("family_id", "email"),)
+
+    id: int | None = Field(default=None, primary_key=True)
+    family_id: int = Field(foreign_key="family.id", index=True, ondelete="CASCADE")
+    email: str = Field(max_length=254, index=True)  # stored lower-case
+    label: str | None = Field(default=None, max_length=60)  # e.g. "Grandpa"
+    invited_by: uuid.UUID
+    status: InviteStatus = InviteStatus.pending
+    created_at: datetime = Field(default_factory=utcnow, sa_type=DateTime(timezone=True))
+    responded_at: datetime | None = Field(default=None, sa_type=DateTime(timezone=True))

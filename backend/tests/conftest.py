@@ -6,7 +6,7 @@ from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel
 
 import app.models
-from app.auth import current_user
+from app.auth import Identity, current_identity, current_user
 from app.db import get_session, make_engine
 from app.main import app
 from app.models import AppUser, Family, Profile, Role
@@ -71,12 +71,23 @@ def client_as(session):
     """client_as(user) -> TestClient acting as that user (None = unauthenticated)."""
     app.dependency_overrides[get_session] = lambda: session
 
-    def _client(user: AppUser | None) -> TestClient:
-        if user is None:
-            app.dependency_overrides.pop(current_user, None)
-        else:
-            app.dependency_overrides[current_user] = lambda: user
-        return TestClient(app)
+    def _client(user: AppUser | Identity | None) -> TestClient:
+        """AppUser = fully set-up user; Identity = signed in but not in a family yet.
+        Each client applies its own user per request, so several clients can coexist."""
+
+        class ActingClient(TestClient):
+            def request(self, *args, **kwargs):
+                app.dependency_overrides.pop(current_user, None)
+                app.dependency_overrides.pop(current_identity, None)
+                if isinstance(user, AppUser):
+                    app.dependency_overrides[current_user] = lambda: user
+                    identity = Identity(id=user.id, email=user.email)
+                    app.dependency_overrides[current_identity] = lambda: identity
+                elif isinstance(user, Identity):
+                    app.dependency_overrides[current_identity] = lambda: user
+                return super().request(*args, **kwargs)
+
+        return ActingClient(app)
 
     yield _client
     app.dependency_overrides.clear()
