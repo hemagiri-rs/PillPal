@@ -72,3 +72,16 @@ tables `Family, AppUser, Profile, Medicine, ScheduleTime, DoseLog`, `GET /health
 ### Task 13: Browser notifications (permission button, service worker, polling, follow-up)
 ### Task 14: Polish + accessibility pass (Lighthouse ≥ 95, 200 % text), README with run instructions
 Each: build + Biome pass, manual check in browser, commit + push.
+
+---
+
+## Phase 2 (addendum A–C)
+
+### Task 15: Invitations + onboarding backend
+Identity dependency (JWT sub + email, no AppUser needed); `Invitation` model + migration + RLS;
+`POST /families`, `GET /invitations/mine`, `POST /invitations/{id}/accept|decline`,
+caregiver `GET/POST /invitations`, `DELETE /invitations/{id}`. Tests for every rule in addendum A.
+### Task 16: Sign-up, Welcome and invite UI
+### Task 17: Senior redesign (home per role, plain words, bigger defaults, stepped medicine form, read aloud)
+### Task 18: Translation backend (`Translation` cache table, `POST /translate`, summary in language)
+### Task 19: Translation frontend (language picker, t(), RTL, instructions original-beneath)

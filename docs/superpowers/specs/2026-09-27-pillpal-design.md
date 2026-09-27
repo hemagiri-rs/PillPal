@@ -264,3 +264,42 @@ offline mode.
 
 1. "Caregiver alert" card: members with adherence < 80 % this week.
 2. Printable weekly schedule view (for the fridge or pharmacist).
+
+---
+
+# Addendum (2026-09-27, evening): sign-up, invitations, senior redesign, translation
+
+Approved in chat. Supersedes earlier sections where they conflict.
+
+## A. Sign-up and invitations
+- Email/password sign-up via Supabase Auth (demo: "Confirm email" turned off in Supabase).
+- A signed-in user with no PillPal account row is sent to **Welcome**: pending invitations for their
+  email + "Start my family" (family name, your name, optional DOB; browser timezone). Starting a family
+  creates Family + the caregiver's own Profile + AppUser(caregiver, profile).
+- **Invitation** table: family, email (lower-case), optional label, invited_by, status
+  (pending | accepted | declined), timestamps; unique (family, email).
+- Caregiver invites by email → list shows Invited / Accepted / Declined; cancel a pending invite;
+  re-invite after decline (row reset to pending).
+- Invitee sees "X invited you to join the Y family" → Yes (enter name, optional DOB → creates their
+  Profile + AppUser(member)) or No (declined). Profile — and therefore reminders — exist only after accept.
+- Rules: 409 on duplicate pending invite, inviting yourself, inviting an existing member, or accepting
+  while already in a family; invitations can only be answered by the matching email.
+- "Add a person without a phone" (caregiver-managed profile, no login) is kept.
+- No emails are sent (in-app invitations only).
+
+## B. Senior-friendly redesign
+- 22 px body, 64 px primary buttons, single column, more spacing.
+- Member home: one giant "Next medicine" card with "I took it", then the rest of today.
+- Caregiver home: one card per person ("Ramesh — 1 medicine due now") → that person's day.
+- Day navigation and reminder prompt move off Home. Plain words: "I took it", "Not taking it";
+  tabs Home · My medicines · How am I doing? · Family/Settings.
+- Add-medicine as 4 short steps (Who → Which medicine → When → Check & save).
+- Read-aloud button (Web Speech API) where supported.
+
+## C. Translation (live via Groq, cached)
+- English + the 22 scheduled Indian languages; RTL for Urdu, Kashmiri, Sindhi. Language picker first.
+- UI strings are English at source; `POST /translate {lang, texts[]}` returns translations: DB cache
+  first, missing strings batched to Groq, stored; browser caches too. Groq failure → English.
+- Medicine names are never translated; instructions are translated with the original shown beneath.
+  The AI weekly summary is generated in the chosen language.
+- Known limit: weaker model quality for Bodo, Santali, Dogri, Manipuri — native review before real use.
