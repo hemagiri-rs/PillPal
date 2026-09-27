@@ -1,0 +1,8 @@
+---
+import MedicinesView from "../components/MedicinesView";
+import AppLayout from "../layouts/AppLayout.astro";
+---
+
+<AppLayout title="Medicines" nav="medicines">
+  <MedicinesView client:only="preact" />
+</AppLayout>

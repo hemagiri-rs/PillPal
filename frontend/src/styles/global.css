@@ -573,3 +573,138 @@ select[aria-invalid="true"] {
     bottom: var(--space-4);
   }
 }
+
+/* ---------- Medicines ---------- */
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.page-head h1 {
+  margin: 0;
+}
+.person-section {
+  margin-bottom: var(--space-5);
+}
+.med-head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  align-items: baseline;
+}
+.med-head h3 {
+  font-family: var(--font-body);
+  font-weight: 700;
+  margin: 0 0 var(--space-1);
+}
+.med-times {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: 700;
+}
+.med-times svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.med-paused {
+  background: var(--surface-sage);
+}
+.tag {
+  padding: 0.125rem var(--space-2);
+  border: 2px solid var(--text-muted);
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+
+/* ---------- Forms: combobox, picks, rows ---------- */
+.combo {
+  position: relative;
+}
+.combo-list {
+  position: absolute;
+  z-index: 4;
+  left: 0;
+  right: 0;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  background: var(--surface);
+  border: 2px solid var(--text-muted);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow);
+  max-height: 22rem;
+  overflow-y: auto;
+}
+.combo-option {
+  min-height: var(--tap);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+.combo-option[aria-selected="true"],
+.combo-option:hover {
+  background: var(--primary-soft);
+}
+.pick-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+.pick-row .chip {
+  min-height: 3rem;
+  font-size: var(--fs-sm);
+}
+fieldset.field {
+  border: 0;
+  padding: 0;
+}
+.time-row {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.time-row input {
+  flex: 1;
+}
+.field-row {
+  display: grid;
+  gap: 0 var(--space-3);
+}
+@media (min-width: 40rem) {
+  .field-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.check-field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.check-field input {
+  width: 2rem;
+  min-height: 2rem;
+  height: 2rem;
+  accent-color: var(--primary);
+}
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.form-actions .btn {
+  flex: 1 1 12rem;
+}
+.delete-btn {
+  margin-top: var(--space-5);
+}
+fieldset.pick-row {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
