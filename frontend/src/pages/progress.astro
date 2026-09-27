@@ -1,0 +1,8 @@
+---
+import ProgressView from "../components/ProgressView";
+import AppLayout from "../layouts/AppLayout.astro";
+---
+
+<AppLayout title="Progress" nav="progress">
+  <ProgressView client:only="preact" />
+</AppLayout>
