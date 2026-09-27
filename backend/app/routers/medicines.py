@@ -37,10 +37,28 @@ def times_for(session: Session, medicine_id: int) -> list[time]:
     return list(rows)
 
 
-def _out(session: Session, med: Medicine, warnings: list[str] | None = None) -> MedicineOut:
-    return MedicineOut(
-        **med.model_dump(), times=times_for(session, med.id), warnings=warnings or []
+def times_by_medicine(session: Session, medicine_ids: list[int]) -> dict[int, list[time]]:
+    """All schedule times for many medicines in one query (avoids one query per medicine)."""
+    out: dict[int, list[time]] = {i: [] for i in medicine_ids}
+    rows = session.exec(
+        select(ScheduleTime)
+        .where(col(ScheduleTime.medicine_id).in_(medicine_ids))
+        .order_by(ScheduleTime.time_of_day)
     )
+    for st in rows:
+        out[st.medicine_id].append(st.time_of_day)
+    return out
+
+
+def _out(
+    session: Session,
+    med: Medicine,
+    warnings: list[str] | None = None,
+    times: list[time] | None = None,
+) -> MedicineOut:
+    if times is None:
+        times = times_for(session, med.id)
+    return MedicineOut(**med.model_dump(), times=times, warnings=warnings or [])
 
 
 def check_rules(
@@ -52,6 +70,7 @@ def check_rules(
     if exclude_id is not None:  # `id != NULL` would match nothing
         query = query.where(Medicine.id != exclude_id)
     others = session.exec(query).all()
+    other_times = times_by_medicine(session, [o.id for o in others])
     warnings: list[str] = []
     if not data.active:
         return warnings
@@ -64,7 +83,7 @@ def check_rules(
                 f"{other.name} {other.strength} is already added for {profile.name} "
                 f"from {fmt_date(other.start_date)}. Edit the existing one instead.",
             )
-        for other_t in times_for(session, other.id):
+        for other_t in other_times[other.id]:
             if any(_minutes_apart(t, other_t) <= CONFLICT_WINDOW_MIN for t in data.times):
                 warnings.append(
                     f"{other.name} is also due at {fmt_time(other_t)}, within "
@@ -101,7 +120,9 @@ def list_medicines(
     if profile_id is not None:
         get_accessible_profile(session, user, profile_id)
         query = query.where(Medicine.profile_id == profile_id)
-    return [_out(session, m) for m in session.exec(query)]
+    meds = session.exec(query).all()
+    times = times_by_medicine(session, [m.id for m in meds])
+    return [_out(session, m, times=times[m.id]) for m in meds]
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)

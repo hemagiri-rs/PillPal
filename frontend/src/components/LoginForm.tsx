@@ -3,8 +3,6 @@ import { supabase } from "../lib/supabase";
 import { Icon } from "./Icon";
 
 export default function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -14,8 +12,16 @@ export default function LoginForm() {
     });
   }, []);
 
-  async function submit(e: Event) {
+  async function submit(e: SubmitEvent) {
     e.preventDefault();
+    // Uncontrolled inputs: anything typed before the page finished loading is kept.
+    const data = new FormData(e.currentTarget as HTMLFormElement);
+    const email = String(data.get("email") ?? "");
+    const password = String(data.get("password") ?? "");
+    if (!email || !password) {
+      setError("Please enter your email and password.");
+      return;
+    }
     setBusy(true);
     setError(null);
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
@@ -46,9 +52,8 @@ export default function LoginForm() {
           type="email"
           autocomplete="email"
           inputMode="email"
+          name="email"
           required
-          value={email}
-          onInput={(e) => setEmail(e.currentTarget.value)}
         />
       </div>
       <div class="field">
@@ -57,16 +62,11 @@ export default function LoginForm() {
           id="password"
           type="password"
           autocomplete="current-password"
+          name="password"
           required
-          value={password}
-          onInput={(e) => setPassword(e.currentTarget.value)}
         />
       </div>
-      <button
-        class="btn btn-primary btn-block"
-        type="submit"
-        disabled={busy || !email || !password}
-      >
+      <button class="btn btn-primary btn-block" type="submit" disabled={busy}>
         {busy ? "Signing in…" : "Sign in"}
       </button>
     </form>

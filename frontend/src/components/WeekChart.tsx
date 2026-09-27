@@ -1,6 +1,6 @@
 import { useState } from "preact/hooks";
 import type { Adherence } from "../lib/api";
-import { fmtDay } from "../lib/format";
+import { fmtDay, parseDate } from "../lib/format";
 
 type Day = Adherence["days"][number];
 
@@ -14,8 +14,13 @@ const SERIES = [
 const W = 700;
 const H = 280;
 const TOP = 36; // room for the % label above each bar
-const BOTTOM = 44; // day labels
+const BOTTOM = 68; // two-line day labels (weekday, date)
 const GAP = 2; // surface gap between stacked segments
+
+/** Short enough to never collide: "Today", "Mon", ... (the date number goes on a second line). */
+function axisDay(iso: string, today: string): string {
+  return iso === today ? "Today" : parseDate(iso).toLocaleDateString("en-GB", { weekday: "short" });
+}
 
 export function WeekChart({ days, today }: { days: Day[]; today: string }) {
   const [selected, setSelected] = useState<string | null>(null);
@@ -73,8 +78,11 @@ export function WeekChart({ days, today }: { days: Day[]; today: string }) {
                     {d.percent}%
                   </text>
                 )}
-                <text x={cx} y={H - 14} text-anchor="middle" class="chart-axis">
-                  {fmtDay(d.date, today).replace("Yesterday", "Yest.")}
+                <text x={cx} y={H - 36} text-anchor="middle" class="chart-axis">
+                  {axisDay(d.date, today)}
+                </text>
+                <text x={cx} y={H - 10} text-anchor="middle" class="chart-axis">
+                  {Number(d.date.slice(8))}
                 </text>
               </g>
             );

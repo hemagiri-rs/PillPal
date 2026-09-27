@@ -16,7 +16,9 @@ def make_engine(url: str, **kwargs):
             dbapi_conn.execute("PRAGMA foreign_keys=ON")
 
         return engine
-    return create_engine(url, pool_pre_ping=True, **kwargs)
+    # No pool_pre_ping: it costs a full DB round trip per request (~250 ms to a distant region).
+    # Recycling connections before Supabase's idle timeout avoids stale ones instead.
+    return create_engine(url, pool_recycle=300, **kwargs)
 
 
 engine = make_engine(get_settings().database_url)

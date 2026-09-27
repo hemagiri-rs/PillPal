@@ -89,7 +89,10 @@ def get_adherence(
             f"Choose a range of {MAX_RANGE_DAYS} days or less.",
         )
     profiles = visible_profiles(session, user, profile_id)
-    doses = build_schedule(session, profiles, start, end, local_now)
+    # One schedule build covers both the requested range and the streak lookback.
+    history_start = min(start, today - timedelta(days=STREAK_LOOKBACK_DAYS - 1))
+    history = build_schedule(session, profiles, history_start, max(end, today), local_now)
+    doses = [d for d in history if start <= d.date <= end]
 
     by_med: dict[int, list[DoseItem]] = defaultdict(list)
     for d in doses:
@@ -114,9 +117,6 @@ def get_adherence(
         days.append(DayCounts(**count([x for x in doses if x.date == d], date=d)))
         d += timedelta(days=1)
 
-    history = build_schedule(
-        session, profiles, today - timedelta(days=STREAK_LOOKBACK_DAYS - 1), today, local_now
-    )
     return AdherenceOut(
         start=start,
         end=end,
