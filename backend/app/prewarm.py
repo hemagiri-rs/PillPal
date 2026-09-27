@@ -10,7 +10,7 @@ import re
 import sys
 from pathlib import Path
 
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from app.db import engine, init_db
 from app.languages import LANGUAGES
@@ -49,7 +49,7 @@ def main() -> None:
     langs = sys.argv[1:] or [c for c in LANGUAGES if c != "en"]
     with Session(engine) as s:
         texts = ui_strings()
-        texts += sorted({m.instructions for m in s.query(Medicine).all()} - set(texts))
+        texts += sorted(set(s.exec(select(Medicine.instructions)).all()) - set(texts))
         print(f"{len(texts)} strings x {len(langs)} languages")
         for lang in langs:
             missing = [x for x in texts if x not in cached(s, lang, texts)]

@@ -39,9 +39,11 @@ PEOPLE = [
     ("Arjun Sharma", date(2010, 11, 20), "Mild asthma.", "arjun@example.com", 0.85),
 ]  # fmt: skip
 CAREGIVER_EMAIL = "priya@example.com"
+CAREGIVER = ("Priya Sharma", date(1984, 6, 9), "Looks after the family's medicines.")
 
-# person index, name, strength, instructions, times
+# person index (3 = the caregiver herself), name, strength, instructions, times
 MEDICINES = [
+    (3, "Vitamin D3", "1000 IU Cap", "1 capsule after breakfast", ["09:00"]),
     (0, "Metformin", "500 mg Tab", "1 tablet after food", ["08:00", "20:00"]),
     (0, "Amlodipine", "5 mg Tab", "1 tablet in the morning", ["08:30"]),
     (0, "Atorvastatin", "10 mg Tab", "1 tablet at bedtime", ["21:30"]),
@@ -68,7 +70,7 @@ def auth_user_id(client: httpx.Client, email: str) -> str:
 
 
 def take_chance(person: int, t: time, rng: random.Random) -> bool:
-    chance = PEOPLE[person][4]
+    chance = PEOPLE[person][4] if person < len(PEOPLE) else 0.9
     if (
         chance is None
     ):  # Ramesh: reliable mornings, often forgets evenings (story for the AI summary)
@@ -106,6 +108,11 @@ def main() -> None:
             profiles.append(p)
         s.flush()
 
+        name, dob, notes = CAREGIVER
+        own = Profile(family_id=fam.id, name=name, date_of_birth=dob, notes=notes)
+        s.add(own)
+        s.flush()
+        profiles.append(own)  # index 3 in MEDICINES
         caregiver_id = auth_user_id(client, CAREGIVER_EMAIL)
         s.add(
             AppUser(
@@ -113,9 +120,10 @@ def main() -> None:
                 email=CAREGIVER_EMAIL,
                 role=Role.caregiver,
                 family_id=fam.id,
+                profile_id=own.id,
             )
         )
-        for (_, _, _, email, _), p in zip(PEOPLE, profiles, strict=True):
+        for (_, _, _, email, _), p in zip(PEOPLE, profiles[:3], strict=True):
             s.add(
                 AppUser(
                     id=auth_user_id(client, email),
