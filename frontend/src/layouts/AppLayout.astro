@@ -34,7 +34,7 @@ const { title, nav = false } = Astro.props;
   </head>
   <body>
     <a class="skip-link" href="#main" data-i18n>Skip to main content</a>
-    {nav !== false && <NavBar client:load active={nav} />}
+    {nav !== false && <NavBar client:only="preact" active={nav} />}
     <main id="main" class={nav !== false ? "app-main" : "plain-main"}>
       <slot />
     </main>

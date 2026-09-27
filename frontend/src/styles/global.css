@@ -1231,3 +1231,32 @@ ul.lang-grid {
   border: 3px solid var(--missed);
   background: var(--missed-tint);
 }
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: var(--tap);
+  padding: 0 var(--space-3);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.lang-switch:hover {
+  background: var(--primary-soft);
+}
+.lang-switch-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+@media (max-width: 30rem) {
+  .family-name {
+    display: none; /* keep the top bar to one line on small phones */
+  }
+  .brand {
+    margin-right: auto;
+  }
+}

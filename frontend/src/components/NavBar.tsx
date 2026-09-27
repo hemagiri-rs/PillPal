@@ -1,6 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 import { api, type Schedule } from "../lib/api";
-import { useT } from "../lib/i18n";
+import { getLang, useT } from "../lib/i18n";
 import { remindDue } from "../lib/notifications";
 import { useMe } from "../lib/session";
 import { Icon, type IconName } from "./Icon";
@@ -56,6 +56,14 @@ export default function NavBar({ active }: { active: Tab }) {
         <span>PillPal</span>
       </a>
       {me && <span class="family-name">{me.family_name}</span>}
+      <a
+        class="lang-switch"
+        href={`/language?next=${encodeURIComponent(location.pathname + location.search)}`}
+        aria-label={t("Change language")}
+      >
+        <Icon name="globe" class="lang-switch-icon" />
+        <span lang={getLang().code}>{getLang().native}</span>
+      </a>
       <nav aria-label="Main">
         <ul class="tabs">
           {tabs.map((tab) => (
