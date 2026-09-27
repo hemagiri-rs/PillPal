@@ -9,4 +9,5 @@ export default defineConfig({
   server: { port: 4321 },
   // Read the shared PillPal/.env. Only PUBLIC_* variables are ever sent to the browser.
   vite: { envDir: ".." },
+  devToolbar: { enabled: false },
 });

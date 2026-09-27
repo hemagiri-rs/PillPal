@@ -42,20 +42,20 @@ export default function NavBar({ active }: { active: Tab }) {
     {
       id: "medicines",
       href: "/medicines",
-      label: member ? t("My medicines") : t("Medicines"),
+      label: t("Medicine"),
       icon: "pill",
     },
     {
       id: "progress",
       href: "/progress",
-      label: member ? t("How am I doing?") : t("Progress"),
+      label: t("Progress"),
       icon: "chart",
     },
     { id: "invitations", href: "/invitations", label: t("Invites"), icon: "mail" },
     {
       id: "family",
       href: "/family",
-      label: member ? t("Settings") : t("Family"),
+      label: member ? t("Me") : t("Family"),
       icon: "users",
     },
   ];
