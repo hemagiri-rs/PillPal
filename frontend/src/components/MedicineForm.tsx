@@ -43,6 +43,8 @@ interface FormState {
   end_date: string;
   active: boolean;
   times: string[];
+  pills_left: number | null;
+  pills_per_dose: number;
 }
 
 type Step = 1 | 2 | 3 | 4;
@@ -61,6 +63,8 @@ const FIELD_STEP: Record<string, Step> = {
   times: 3,
   start_date: 3,
   end_date: 3,
+  pills_left: 3,
+  pills_per_dose: 3,
 };
 
 export default function MedicineForm() {
@@ -103,6 +107,8 @@ export default function MedicineForm() {
         end_date: "",
         active: true,
         times: ["08:00"],
+        pills_left: null,
+        pills_per_dose: 1,
       });
       if (pre ?? only) setStep(2);
     });
@@ -133,6 +139,10 @@ export default function MedicineForm() {
         e.times = "The same time is listed twice. Remove the duplicate time.";
       if (f.end_date && f.end_date < f.start_date)
         e.end_date = "The end date can't be before the start date.";
+      if (f.pills_left !== null && !(Number.isInteger(f.pills_left) && f.pills_left >= 0))
+        e.pills_left = "Please enter a whole number, or leave it empty.";
+      if (!(Number.isInteger(f.pills_per_dose) && f.pills_per_dose >= 1 && f.pills_per_dose <= 20))
+        e.pills_per_dose = "Please enter a number from 1 to 20.";
     }
     return e;
   }
@@ -443,6 +453,42 @@ export default function MedicineForm() {
             </p>
             {err("end_date")}
           </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="per-dose">{t("Tablets each time")}</label>
+              <input
+                id="per-dose"
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={20}
+                value={f.pills_per_dose}
+                onInput={(e) => set({ pills_per_dose: Number(e.currentTarget.value) || 1 })}
+              />
+              {err("pills_per_dose")}
+            </div>
+            <div class="field">
+              <label for="pills-left">{t("Tablets you have now (optional)")}</label>
+              <input
+                id="pills-left"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={10000}
+                value={f.pills_left ?? ""}
+                aria-describedby="pills-hint"
+                onInput={(e) =>
+                  set({
+                    pills_left: e.currentTarget.value === "" ? null : Number(e.currentTarget.value),
+                  })
+                }
+              />
+              <p class="hint" id="pills-hint">
+                {t("We will remind you before they run out.")}
+              </p>
+              {err("pills_left")}
+            </div>
+          </div>
         </>
       )}
 
@@ -459,6 +505,11 @@ export default function MedicineForm() {
             <dd>{t(f.instructions)}</dd>
             <dt>{t("When")}</dt>
             <dd>{f.times.map(fmtTime).join(", ")}</dd>
+            <dt>{t("Tablets")}</dt>
+            <dd>
+              {t("{n} each time", { n: f.pills_per_dose })}
+              {f.pills_left !== null && ` · ${t("{n} left", { n: f.pills_left })}`}
+            </dd>
             <dt>{t("From")}</dt>
             <dd>
               {fmtLongDate(f.start_date)}

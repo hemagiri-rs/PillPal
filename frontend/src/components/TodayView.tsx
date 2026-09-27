@@ -3,6 +3,7 @@ import { type ApiError, api, type Dose, type Profile, post, type Schedule } from
 import { addDays, firstName, fmtDay, fmtLongDate, fmtTime } from "../lib/format";
 import { useT } from "../lib/i18n";
 import { useMe } from "../lib/session";
+import { AlertsBox } from "./AlertsBox";
 import { DoseCard, minutes } from "./DoseCard";
 import { Icon } from "./Icon";
 
@@ -129,6 +130,7 @@ export default function TodayView() {
         <h1>{t("Today")}</h1>
         <p class="lead">{fmtLongDate(schedule.date)}</p>
         {error && <ErrorNotice text={error} />}
+        <AlertsBox caregiver />
         {profiles.length === 0 && (
           <div class="empty card">
             <Icon name="users" />
@@ -228,6 +230,8 @@ export default function TodayView() {
           />
         </section>
       )}
+
+      {!caregiver && isToday && <AlertsBox caregiver={false} />}
 
       {allDone && (
         <div class="all-done" role="status">

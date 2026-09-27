@@ -33,7 +33,29 @@ export interface Medicine {
   end_date: string | null;
   active: boolean;
   times: string[]; // "HH:MM:SS"
+  pills_left: number | null;
+  pills_per_dose: number;
+  days_left: number | null;
   warnings: string[];
+}
+
+export interface Alerts {
+  low_adherence: {
+    profile_id: number;
+    name: string;
+    percent: number;
+    taken: number;
+    due: number;
+  }[];
+  refills: {
+    medicine_id: number;
+    name: string;
+    strength: string;
+    profile_id: number;
+    profile_name: string;
+    pills_left: number;
+    days_left: number;
+  }[];
 }
 
 export interface Dose {
