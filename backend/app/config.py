@@ -1,7 +1,9 @@
+import json
 from functools import lru_cache
+from typing import Annotated
 
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -12,9 +14,22 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./pillpal.db"
     supabase_url: str = "https://vxgbzjjdkiuzczafyvad.supabase.co"
     supabase_service_role_key: str | None = None  # only used by the seed script
-    cors_origins: list[str] = ["http://localhost:4321"]
+    cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:4321"]
     groq_api_key: str | None = None
     groq_model: str = "qwen/qwen3.8-27b"
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def split_origins(cls, v):
+        # Accept JSON (["a","b"]) or a plain comma-separated list (a,b).
+        if isinstance(v, str):
+            v = v.strip()
+            return (
+                json.loads(v)
+                if v.startswith("[")
+                else [o.strip() for o in v.split(",") if o.strip()]
+            )
+        return v
 
     @field_validator("database_url")
     @classmethod

@@ -142,10 +142,9 @@ def main() -> None:
                 s.add(ScheduleTime(medicine_id=med.id, time_of_day=t))
                 for offset in range(7, -1, -1):
                     day = today - timedelta(days=offset)
-                    if datetime.combine(day, t, tzinfo=now.tzinfo) > now:
-                        continue  # future doses stay pending
-                    if day == today:
-                        continue  # leave today's doses for the live demo
+                    # Leave the last 90 minutes (and the future) unmarked for the live demo.
+                    if datetime.combine(day, t, tzinfo=now.tzinfo) > now - timedelta(minutes=90):
+                        continue
                     if take_chance(person, t, rng):
                         status = DoseStatus.taken
                     elif rng.random() < 0.3:
