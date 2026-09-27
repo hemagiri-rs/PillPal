@@ -1,13 +1,14 @@
 import { useState } from "preact/hooks";
 import type { Adherence } from "../lib/api";
-import { fmtDay, parseDate } from "../lib/format";
+import { fmtDay, fmtWeekday } from "../lib/format";
+import { useT } from "../lib/i18n";
 
 type Day = Adherence["days"][number];
 
 // Bottom -> top. Adjacent pairs validated for colour-blind separation (dataviz validator).
 const SERIES = [
   { key: "taken", label: "Taken", color: "var(--taken)" },
-  { key: "skipped", label: "Skipped", color: "var(--skipped)" },
+  { key: "skipped", label: "Not taken", color: "var(--skipped)" },
   { key: "missed", label: "Missed", color: "var(--missed)" },
 ] as const;
 
@@ -17,27 +18,30 @@ const TOP = 36; // room for the % label above each bar
 const BOTTOM = 68; // two-line day labels (weekday, date)
 const GAP = 2; // surface gap between stacked segments
 
-/** Short enough to never collide: "Today", "Mon", ... (the date number goes on a second line). */
-function axisDay(iso: string, today: string): string {
-  return iso === today ? "Today" : parseDate(iso).toLocaleDateString("en-GB", { weekday: "short" });
-}
-
 export function WeekChart({ days, today }: { days: Day[]; today: string }) {
+  const t = useT();
   const [selected, setSelected] = useState<string | null>(null);
   const max = Math.max(1, ...days.map((d) => d.taken + d.skipped + d.missed));
   const slot = W / days.length;
   const barW = Math.min(56, slot * 0.55);
   const plotH = H - TOP - BOTTOM;
   const sel = days.find((d) => d.date === selected);
+  const describe = (d: Day) =>
+    t("{day}: {taken} taken, {skipped} not taken, {missed} missed", {
+      day: fmtDay(d.date, today),
+      taken: d.taken,
+      skipped: d.skipped,
+      missed: d.missed,
+    });
 
   return (
     <figure class="chart">
-      <figcaption class="chart-title">Doses each day</figcaption>
-      <ul class="legend" aria-label="Legend">
+      <figcaption class="chart-title">{t("Medicines each day")}</figcaption>
+      <ul class="legend" aria-label={t("Legend")}>
         {SERIES.map((s) => (
           <li key={s.key}>
             <span class="legend-swatch" style={{ background: s.color }} />
-            {s.label}
+            {t(s.label)}
           </li>
         ))}
       </ul>
@@ -78,8 +82,9 @@ export function WeekChart({ days, today }: { days: Day[]; today: string }) {
                     {d.percent}%
                   </text>
                 )}
+                {/* short labels that never collide: weekday on one line, date number below */}
                 <text x={cx} y={H - 36} text-anchor="middle" class="chart-axis">
-                  {axisDay(d.date, today)}
+                  {d.date === today ? t("Today") : fmtWeekday(d.date)}
                 </text>
                 <text x={cx} y={H - 10} text-anchor="middle" class="chart-axis">
                   {Number(d.date.slice(8))}
@@ -96,7 +101,7 @@ export function WeekChart({ days, today }: { days: Day[]; today: string }) {
               type="button"
               class="chart-hit"
               aria-pressed={selected === d.date}
-              aria-label={`${fmtDay(d.date, today)}: ${d.taken} taken, ${d.skipped} skipped, ${d.missed} missed`}
+              aria-label={describe(d)}
               onClick={() => setSelected(d.date)}
             />
           ))}
@@ -104,21 +109,19 @@ export function WeekChart({ days, today }: { days: Day[]; today: string }) {
       </div>
 
       <p class="chart-detail" aria-live="polite">
-        {sel
-          ? `${fmtDay(sel.date, today)}: ${sel.taken} taken, ${sel.skipped} skipped, ${sel.missed} missed${sel.pending ? `, ${sel.pending} still to come` : ""}.`
-          : "Tap a day to see its numbers."}
+        {sel ? `${describe(sel)}.` : t("Tap a day to see its numbers.")}
       </p>
 
       <details class="chart-table">
-        <summary>Show as a table</summary>
+        <summary>{t("Show as a table")}</summary>
         <table>
           <thead>
             <tr>
-              <th scope="col">Day</th>
-              <th scope="col">Taken</th>
-              <th scope="col">Skipped</th>
-              <th scope="col">Missed</th>
-              <th scope="col">Taken %</th>
+              <th scope="col">{t("Day")}</th>
+              <th scope="col">{t("Taken")}</th>
+              <th scope="col">{t("Not taken")}</th>
+              <th scope="col">{t("Missed")}</th>
+              <th scope="col">%</th>
             </tr>
           </thead>
           <tbody>
