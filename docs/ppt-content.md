@@ -170,7 +170,43 @@ We measured it instead of guessing.
 
 ---
 
-## Slide 12 — 23 languages, live
+## Slide 12 — The psychology behind the design (Laws of UX)
+
+**Every design decision here is traceable to a known principle** — the 30 laws from
+[lawsofux.com](https://lawsofux.com/) (Jon Yablonski).
+
+| What we did | Law | Why it matters for a 72-year-old |
+|---|---|---|
+| Member home shows **one** "next dose" card, not the day's list | [Hick's Law](https://lawsofux.com/hicks-law/) | Decision time grows with the number of choices; one obvious action beats a menu |
+| Tap targets **56–64 px**, Taken is the biggest element, destructive actions are never the easy target | [Fitts's Law](https://lawsofux.com/fittss-law/) | Big, close, well-spaced targets — and the law itself warns against making destructive actions easy to hit |
+| One emphasised action per card; status shown as **colour + icon + word** | [Von Restorff Effect](https://lawsofux.com/von-restorff-effect/) | Emphasis is zero-sum, and the law says don't rely on colour alone — it fails for low vision |
+| The server computes doses, timezone, missed status and the 30-minute conflict warning | [Tesler's Law](https://lawsofux.com/teslers-law/) | Complexity is conserved: we paid for it in code so the caregiver doesn't pay for it every day |
+| Free-text medicine names, normalised case and whitespace, flexible input | [Postel's Law](https://lawsofux.com/postels-law/) | Accept messy input generously, produce strict and predictable output |
+| Bottom tab bar, logo links home, native date/time pickers, standard controls | [Jakob's Law](https://lawsofux.com/jakobs-law/) | Familiar patterns mean nothing has to be learned first |
+| Add-medicine as 4 steps, with "Which medicine — step 2 of 4" visible | [Goal-Gradient Effect](https://lawsofux.com/goal-gradient-effect/) + [Zeigarnik Effect](https://lawsofux.com/zeigarnik-effect/) | Visible progress and visible incompleteness both drive completion |
+| Today's doses are **shown**, never remembered; the instruction text stays on the card | [Working Memory](https://lawsofux.com/working-memory/) | Recognition beats recall — working memory holds ~4–7 chunks for ~20–30 seconds |
+| Large confirmation with **Undo**; errors end by saying how to fix it | [Peak-End Rule](https://lawsofux.com/peak-end-rule/) | People judge an experience by its most intense moment and its ending — so the stressful moment is designed |
+| The card flips to "Taken at 8:05 PM" immediately | [Doherty Threshold](https://lawsofux.com/doherty-threshold/) | Under about 400 ms, it never feels like waiting |
+| No product tour; language first, then straight into the task | [Paradox of the Active User](https://lawsofux.com/paradox-of-the-active-user/) | People don't read manuals — they start clicking |
+| Dose cards group name + strength + instruction + time; one card per person | [Proximity](https://lawsofux.com/law-of-proximity/) + [Common Region](https://lawsofux.com/law-of-common-region/) + [Chunking](https://lawsofux.com/chunking/) | Group by spacing first, containers second |
+
+**Where we deliberately break a law.** Jakob's Law says follow the conventions — but the conventions were
+built for a 25-year-old's eyes and hands. We break them on type size (22 px), contrast (7:1) and target
+size (56 px+), because matching the standard would fail the actual user.
+
+**Where we refuse a law.** The Zeigarnik guidance warns against "weaponising open loops with endless
+streaks and nagging". We show a streak and step progress, but the framing is shame-free, there is exactly
+**one** follow-up reminder, and nothing here is optimised for time-on-site.
+
+**Miller's Law, used correctly.** We did **not** cap the navigation at 7 items — the law is constantly
+misused that way. Its real lesson is **chunking**, so we group instead, and every icon carries a word.
+
+→ Don't read the table. Pick three rows — Fitts, Tesler, Peak-End — and tell the story behind each. The
+"where we break the law" line and the Zeigarnik ethics line are the two that show judgment; say both.
+
+---
+
+## Slide 13 — 23 languages, live
 
 - English plus the **22 scheduled languages of India** — Hindi, Bengali, Telugu, Marathi, Tamil, Urdu,
   Gujarati, Kannada, Malayalam, Odia, Punjabi, Assamese, Maithili, Santali, Kashmiri, Nepali, Konkani,
@@ -187,7 +223,7 @@ native review before real-world use. Saying this makes the rest of your claims m
 
 ---
 
-## Slide 13 — The AI parts (and why they don't break)
+## Slide 14 — The AI parts (and why they don't break)
 
 **Missed-dose summary** — facts computed in code first: missed/skipped per medicine, which times of day
 are missed most, weekday patterns, streak. Groq then writes 2–4 friendly sentences with one tip.
@@ -209,7 +245,7 @@ Theme 5, applied here.
 
 ---
 
-## Slide 14 — Architecture
+## Slide 15 — Architecture
 
 ```
 Astro static build (Preact islands; supabase-js for sign-in only)
@@ -233,7 +269,7 @@ would live in the browser. One place to enforce rules is the point.
 
 ---
 
-## Slide 15 — Tech stack
+## Slide 16 — Tech stack
 
 | Layer | |
 |---|---|
@@ -247,7 +283,7 @@ would live in the browser. One place to enforce rules is the point.
 
 ---
 
-## Slide 16 — Database design
+## Slide 17 — Database design
 
 `Family` · `Profile` · `AppUser` (caregiver | member) · `Medicine` · `ScheduleTime` · `DoseLog` ·
 `Invitation` · `Translation`
@@ -265,7 +301,7 @@ Three decisions:
 
 ---
 
-## Slide 17 — Innovation
+## Slide 18 — Innovation
 
 - **Senior-first, not senior-friendly-later.** The whole UI is built to the constraints above because
   the primary user is elderly.
@@ -281,7 +317,7 @@ Three decisions:
 
 ---
 
-## Slide 18 — Live demo (the flow)
+## Slide 19 — Live demo (the flow)
 
 1. **Language first** — pick Hindi; the whole app flips, layout included.
 2. **Sign up / sign in** → Welcome with a pending invitation.
@@ -302,12 +338,12 @@ the required validation; don't rush them.
 
 ---
 
-## Slide 19 — Rubric mapping
+## Slide 20 — Rubric mapping
 
 | Criteria (5 marks each) | How we answer it |
 |---|---|
 | **Functionality & Requirements** | Every clause of Theme 4 #2: profiles, medicines with dosage + timing, taken/skipped marking, daily schedule, adherence summary, duplicate/conflict validation — plus invitations, alerts, refills, print |
-| **UI/UX & Frontend Design** | Senior-first design (22 px body, 7:1 contrast, 56 px targets, colour + icon + label), mobile-first responsive, 4-step add-medicine flow, plain-language errors, read-aloud, printable view |
+| **UI/UX & Frontend Design** | Senior-first design (22 px body, 7:1 contrast, 56 px targets, colour + icon + label), mobile-first responsive, 4-step add-medicine flow, plain-language errors, read-aloud, printable view — **every choice traceable to a named UX law** (slide 12) |
 | **Technical Implementation** | FastAPI + SQLModel REST API, Postgres, JWT auth with role guards, RLS, unique constraints, computed schedules in the family's timezone, typed end to end, Ruff + Biome, GitHub Actions CI |
 | **Innovation & Presentation** | 23 languages with RTL, AI summary and translation that always degrade to a working fallback, refill prediction, adherence alerts, canvas-free installable app, and a demo where every claim is visible on screen |
 
@@ -316,7 +352,7 @@ to the closing slide.
 
 ---
 
-## Slide 20 — Scope and what's next
+## Slide 21 — Scope and what's next
 
 **Not built (deliberately):** push notifications with the browser fully closed, the iOS build, SMS/email
 reminders, drug-interaction checking, offline mode, multi-family users.
@@ -329,7 +365,7 @@ pharmacist-verified drug interaction data.
 
 ---
 
-## Slide 21 — Closing
+## Slide 22 — Closing
 
 **PillPal**
 Medicine reminders for the whole family.
