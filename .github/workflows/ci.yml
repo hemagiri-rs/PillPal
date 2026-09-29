@@ -24,7 +24,7 @@ jobs:
       run:
         working-directory: frontend
     env:
-      PUBLIC_SUPABASE_URL: https://vxgbzjjdkiuzczafyvad.supabase.co
+      PUBLIC_SUPABASE_URL: https://example.supabase.co
       PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
       PUBLIC_API_URL: http://localhost:8000
     steps:

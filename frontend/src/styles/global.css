@@ -250,6 +250,18 @@ select[aria-invalid="true"] {
   margin-top: var(--space-3);
 }
 
+fieldset.card {
+  min-inline-size: 0;
+  margin: 0;
+}
+
+.pick-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -734,8 +746,9 @@ fieldset.pick-row {
   margin-top: var(--space-5);
 }
 .card-legend {
-  float: left;
-  width: 100%;
+  flex-basis: 100%;
+  display: block;
+  padding: 0;
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
   font-weight: 600;

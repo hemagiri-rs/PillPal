@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=(".env", "../.env"), extra="ignore")
 
     database_url: str = "sqlite:///./pillpal.db"
-    supabase_url: str = "https://vxgbzjjdkiuzczafyvad.supabase.co"
+    supabase_url: str = "https://example.supabase.co"
     supabase_service_role_key: str | None = None  # only used by the seed script
     cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:4321"]
     groq_api_key: str | None = None
